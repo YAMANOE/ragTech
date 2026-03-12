@@ -82,6 +82,13 @@ class PipelineValidator:
         # ── Topic assignment checks ───────────────────────────────────────
         checks += self._check_topics(result.topic_assignments)
 
+        # ── Metadata quality checks ───────────────────────────────────────
+        full_text = result.versions[0].full_text_original if result.versions else ""
+        checks += self._check_metadata_quality(doc, full_text)
+
+        # ── UI artifact leak checks ───────────────────────────────────────
+        checks += self._check_section_artifact_leak(result.sections)
+
         # ── Summary log ───────────────────────────────────────────────────
         errors   = [r for r in checks if not r.passed and r.severity == "error"]
         warnings = [r for r in checks if not r.passed and r.severity == "warning"]
@@ -413,4 +420,78 @@ class PipelineValidator:
                 else f"Expected 1 primary topic, found {primary_count}",
             severity="warning",
         ))
+        return checks
+
+    # ── Metadata quality checks ───────────────────────────────────────────────
+
+    def _check_metadata_quality(
+        self,
+        doc: Document,
+        full_text: str = "",
+    ) -> list[ValidationResult]:
+        """Warn when metadata that should be extractable is missing."""
+        checks = []
+
+        # Gazette present but no publication_date
+        if doc.official_gazette_number and not doc.publication_date:
+            checks.append(ValidationResult(
+                check_name="missing_publication_date",
+                passed=False,
+                doc_slug=doc.doc_slug,
+                detail=(
+                    f"Gazette #{doc.official_gazette_number} found but "
+                    "publication_date is null — check date parsing (MM/DD/YYYY?)"
+                ),
+                severity="warning",
+            ))
+
+        # Legal basis trigger in text but field empty
+        if not doc.legal_basis_text and full_text:
+            if re.search(r"بمقتضى|استناداً|بناءً على", full_text[:1500]):
+                checks.append(ValidationResult(
+                    check_name="missing_legal_basis_text",
+                    passed=False,
+                    doc_slug=doc.doc_slug,
+                    detail=(
+                        "Legal basis trigger found in text but "
+                        "legal_basis_text field is null"
+                    ),
+                    severity="warning",
+                ))
+
+        return checks
+
+    # ── UI artifact leak checks ───────────────────────────────────────────────
+
+    def _check_section_artifact_leak(
+        self,
+        sections: list[Section],
+    ) -> list[ValidationResult]:
+        """Warn if any known LOB UI artifact strings leaked into section text."""
+        from utils.arabic_utils import LOB_UI_ARTIFACTS
+
+        checks = []
+        leaking_section_id: Optional[str] = None
+
+        for sec in sections:
+            text = sec.original_text or ""
+            for artifact in LOB_UI_ARTIFACTS:
+                if artifact in text:
+                    leaking_section_id = sec.section_id
+                    break
+            if leaking_section_id:
+                break
+
+        if leaking_section_id:
+            checks.append(ValidationResult(
+                check_name="ui_artifact_in_section_text",
+                passed=False,
+                record_id=leaking_section_id,
+                detail=(
+                    "LOB UI artifact string found in section text — "
+                    "check remove_lob_artifacts() in parser"
+                ),
+                severity="warning",
+            ))
+
         return checks

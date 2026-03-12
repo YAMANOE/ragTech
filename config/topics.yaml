@@ -348,3 +348,45 @@ topics:
       - التنفيذ القضائي
       - التحكيم
       - الوساطة
+
+  - id: agricultural-insurance-law
+    name_ar: قانون الزراعة والتأمين الزراعي وصناديق التكافل
+    name_en: Agricultural & Rural Law (incl. Agricultural Mutual Funds)
+    level: 1
+    parent: null
+    keywords_ar:
+      # Core fund/mutual terms — likely in title
+      - صندوق التكافل
+      - صندوق
+      - تكافل
+      # Agricultural domain
+      - زراعي
+      - زراعية
+      - الزراعة
+      - قانون الزراعة
+      - وزارة الزراعة
+      - مزارع
+      - المزارع
+      - منتجات زراعية
+      - موسم زراعي
+      - الإنتاج الزراعي
+      # Risk and coverage
+      - مخاطر
+      - المخاطر الزراعية
+      - الأخطار
+      - تعويض
+      - التعويض
+      # Insurance-like concepts
+      - تأمين زراعي
+      - عقد التكافل
+      - بدل الاشتراك
+      - برنامج التكافل
+      # Specific agricultural risks
+      - آفات
+      - الجفاف
+      - الصقيع
+      - الثلوج
+      - البرد
+      - الفيضانات
+      - السيول
+      - الآفات الحشرية

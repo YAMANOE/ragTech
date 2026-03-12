@@ -116,20 +116,21 @@ class LOBParser:
         # 2. Extract title
         title_ar = self._extract_title(soup, parse_notes)
 
-        # 3. Extract body text
-        body_text = self._extract_body_text(soup, parse_notes)
+        # 3. Extract body text, then strip known LOB Angular UI artifact lines
+        raw_body_text = self._extract_body_text(soup, parse_notes)
+        body_text = ATU.remove_lob_artifacts(raw_body_text)  # removes e.g. "ارتباطات المادة"
 
         if not body_text:
             parse_notes.append("WARN: Empty body text extracted — check LOB_SELECTORS")
             logger.warning(f"[Parser] Empty body text for {doc_slug}")
 
-        # 4. Extract metadata from title + first ~800 chars of body
-        metadata = self._extract_metadata(title_ar, body_text[:800], doc_slug, parse_notes)
+        # 4. Extract metadata from title + first ~1500 chars of cleaned body
+        metadata = self._extract_metadata(title_ar, body_text[:1500], doc_slug, parse_notes)
 
         # 5. Extract attachment URLs
         attachments = self._extract_attachments(soup, source_url)
 
-        # 6. Segment body text into sections
+        # 6. Segment cleaned body text into sections
         sections = self._segment_sections(body_text, parse_notes)
 
         logger.info(
@@ -162,11 +163,12 @@ class LOBParser:
         # Build minimal metadata from text alone
         metadata = self._extract_metadata(
             title_ar=text.split("\n")[0][:200],
-            context_text=text[:800],
+            context_text=ATU.remove_lob_artifacts(text)[:1500],
             doc_slug=doc_slug,
             parse_notes=parse_notes,
         )
-        sections = self._segment_sections(text, parse_notes)
+        clean_text = ATU.remove_lob_artifacts(text)
+        sections = self._segment_sections(clean_text, parse_notes)
 
         return {
             "doc_slug":    doc_slug,
@@ -465,22 +467,34 @@ class LOBParser:
                 m_par_ordinal = ATU.detect_paragraph_ordinal(stripped)
 
                 if (m_par_letter or m_par_ordinal) and pending_section["type"] == "article":
-                    # Flush current article, start paragraph
-                    # (paragraphs are nested under articles but stored flat
-                    #  with parent_order reference)
-                    flush_pending()
-                    order += 1
-                    par_num = (
-                        m_par_letter.group(1) if m_par_letter
-                        else m_par_ordinal.group(1)
-                    )
-                    pending_section = _new_pending(
-                        stype="paragraph",
-                        number=par_num,
-                        label=stripped,
-                        order=order,
-                        parent_order=current_article_order,
-                    )
+                    # Only split into a paragraph sub-node when the article
+                    # already has substantive lead text.  If the article body
+                    # is still empty (e.g. article 2 starts immediately with
+                    # "أ-"), accumulate everything inside the article body so
+                    # it stays non-empty and useful for chatbot retrieval.
+                    article_body = "\n".join(pending_section["body_lines"]).strip()
+                    in_no_split  = pending_section.get("no_split", False)
+
+                    if article_body and not in_no_split:
+                        # Article has lead text → create paragraph sub-node
+                        flush_pending()
+                        order += 1
+                        par_num = (
+                            m_par_letter.group(1) if m_par_letter
+                            else m_par_ordinal.group(1)
+                        )
+                        pending_section = _new_pending(
+                            stype="paragraph",
+                            number=par_num,
+                            label=stripped,
+                            order=order,
+                            parent_order=current_article_order,
+                        )
+                    else:
+                        # Article empty or already in no-split mode →
+                        # keep ALL paragraph content inside the article body
+                        pending_section["no_split"] = True
+                        pending_section["body_lines"].append(line)
                 else:
                     pending_section["body_lines"].append(line)
             else:

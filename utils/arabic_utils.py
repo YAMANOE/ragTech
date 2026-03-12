@@ -83,6 +83,61 @@ ARABIC_ORDINAL_TO_INT: dict[str, int] = {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# LOB website UI artifacts — lines that pollute the content div
+# These are Angular component labels / navigation elements / tab titles.
+# Used by remove_lob_artifacts() to strip them line-by-line.
+# ─────────────────────────────────────────────────────────────────────────────
+LOB_UI_ARTIFACTS: frozenset = frozenset([
+    "ديوان التشريع والرأي",
+    "ديوان التشريع و الرأي",
+    "التشريعات الأردنية",
+    "ارتباطات المادة",        # CRITICAL: injected after every article header
+    "رقم التشريع",
+    "سنة التشريع",
+    "نوع التشريع",
+    "الاسم التفصيلي",
+    "التشريع كما صدر",
+    "التشريعات المرتبطة",
+    "طباعة التشريع",
+    "العودة الى الصفحة السابقة",
+    "العودة إلى الصفحة السابقة",
+    "تعديل التشريع",
+    "المعلومات الاساسية",
+    "المعلومات الأساسية",
+])
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Entity validation helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Words that indicate a greedy regex has captured beyond the entity boundary.
+_ENTITY_BAD_WORDS: frozenset = frozenset([
+    "يسمى", "يهدف", "يقوم", "يكون", "ناتج", "نائبا", "نائباً", "نائبًا",
+    "عليها", "عليهم", "عليه", "إذا", "كانت", "كان", "اللازمة", "اللازم",
+    "لتنفيذ", "هذا", "ذلك", "بموجب", "المنصوص", "المذكورة", "المذكور",
+    "أحكام", "لأغراض", "حيثما", "وردت", "المقررة", "المحددة",
+])
+
+# Lightweight registry of common Jordanian official entities.
+# Used to positively validate or supplement extracted entity names.
+JORDANIAN_ENTITY_REGISTRY: frozenset = frozenset([
+    "مجلس الوزراء", "مجلس الأعيان", "مجلس النواب", "مجلس الإدارة",
+    "وزارة الزراعة", "وزارة الصحة", "وزارة المالية", "وزارة العدل",
+    "وزارة الداخلية", "وزارة الخارجية", "وزارة العمل",
+    "وزارة الصناعة والتجارة", "وزارة التخطيط", "وزارة الأشغال العامة",
+    "وزارة المياه والري", "وزارة الطاقة والثروة المعدنية",
+    "وزارة الاتصالات", "وزارة التربية والتعليم",
+    "دائرة ضريبة الدخل", "دائرة ضريبة المبيعات", "دائرة الجمارك",
+    "دائرة الأراضي والمساحة", "دائرة الإحصاءات العامة",
+    "دائرة الموازنة العامة",
+    "هيئة الاستثمار", "هيئة الأوراق المالية",
+    "هيئة تنظيم قطاع الاتصالات", "هيئة تنظيم الطاقة والمعادن",
+    "البنك المركزي الأردني", "ديوان المحاسبة",
+    "المحكمة الدستورية", "محكمة التمييز", "محكمة العدل العليا",
+    "المؤسسة العامة للضمان الاجتماعي",
+])
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Compiled regex patterns for legal structure detection
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -132,12 +187,12 @@ RE_ANNEX = re.compile(
     re.MULTILINE | re.UNICODE,
 )
 
-# Legal basis patterns (استناداً / بناءً / عملاً / تطبيقاً / بمقتضى)
+# Legal basis patterns — covers "صادر بمقتضى المادة (31) من الدستور" style too
 RE_LEGAL_BASIS = re.compile(
-    r"(استناداً?\s+(?:لأحكام|إلى)|بناءً?\s+على(?:\s+أحكام)?|"
+    r"((?:صادر\s+)?بمقتضى|استناداً?\s+(?:لأحكام|إلى)|بناءً?\s+على(?:\s+أحكام)?|"
     r"عملاً?\s+بأحكام|تطبيقاً?\s+لأحكام|وفقاً?\s+لأحكام|"
-    r"بمقتضى\s+أحكام|استناداً?\s+إلى\s+أحكام)"
-    r"(.{15,300}?)(?=\n|،\s|\.\s|$)",
+    r"استناداً?\s+إلى\s+أحكام)"
+    r"(.{10,300}?)(?=\n|$)",
     re.DOTALL | re.UNICODE,
 )
 
@@ -184,11 +239,17 @@ RE_REPEAL = re.compile(
 )
 
 # ── Entity patterns ──────────────────────────────────────────────────────────
-RE_MINISTRY = re.compile(r"وزارة\s+[\u0600-\u06FF\u0020]{3,45}", re.UNICODE)
-RE_AUTHORITY = re.compile(r"(?:هيئة|سلطة)\s+[\u0600-\u06FF\u0020]{3,45}", re.UNICODE)
-RE_COUNCIL = re.compile(r"مجلس\s+[\u0600-\u06FF\u0020]{3,45}", re.UNICODE)
-RE_COURT = re.compile(r"محكمة\s+[\u0600-\u06FF\u0020]{3,45}", re.UNICODE)
-RE_DEPARTMENT = re.compile(r"(?:دائرة|مديرية)\s+[\u0600-\u06FF\u0020]{3,45}", re.UNICODE)
+# Key design choices:
+#   \b   — word boundary prevents matching 'وزارة' inside 'الوزارة'
+#   _AR_WORD — one Arabic word (no space), so greedy space-capture is impossible
+#   {0,2} — allow up to 3 words total (prefix + 2), then validate_entity_candidate()
+_AR_WORD = r"[\u0600-\u06FF]+"   # single Arabic word (no embedded spaces)
+
+RE_MINISTRY   = re.compile(r"\bوزارة\s+"   + _AR_WORD + r"(?:\s+" + _AR_WORD + r"){0,2}", re.UNICODE)
+RE_AUTHORITY  = re.compile(r"\b(?:هيئة|سلطة)\s+" + _AR_WORD + r"(?:\s+" + _AR_WORD + r"){0,2}", re.UNICODE)
+RE_COUNCIL    = re.compile(r"\bمجلس\s+"    + _AR_WORD + r"(?:\s+" + _AR_WORD + r"){0,2}", re.UNICODE)
+RE_COURT      = re.compile(r"\bمحكمة\s+"   + _AR_WORD + r"(?:\s+" + _AR_WORD + r"){0,2}", re.UNICODE)
+RE_DEPARTMENT = re.compile(r"\b(?:دائرة|مديرية)\s+" + _AR_WORD + r"(?:\s+" + _AR_WORD + r"){0,2}", re.UNICODE)
 
 # ── Scope / applicability patterns ──────────────────────────────────────────
 RE_SCOPE_ALL = re.compile(
@@ -256,6 +317,21 @@ class ArabicTextUtils:
         for ent, char in replacements.items():
             text = text.replace(ent, char)
         return text
+
+    @staticmethod
+    def remove_lob_artifacts(text: str) -> str:
+        """
+        Remove known LOB Angular UI label lines from extracted text.
+        Only removes exact full-line matches — safe for legal body text.
+        Call this on body_text before segmentation and metadata extraction.
+        """
+        lines = text.splitlines()
+        cleaned: list[str] = []
+        for line in lines:
+            if line.strip() in LOB_UI_ARTIFACTS:
+                continue
+            cleaned.append(line)
+        return "\n".join(cleaned)
 
     @staticmethod
     def remove_zero_width(text: str) -> str:
@@ -444,17 +520,39 @@ class ArabicTextUtils:
     @staticmethod
     def extract_dates(text: str) -> list[str]:
         """
-        Find all DD/MM/YYYY or DD-MM-YYYY dates in text.
-        Returns list of ISO 8601 date strings (YYYY-MM-DD).
+        Find all dates in text, returning YYYY-MM-DD strings.
+
+        LOB pages often use MM/DD/YYYY (US order), e.g. 04/30/2025.
+        Disambiguation rules:
+          - If part2 > 12 and part1 <= 12  → MM/DD/YYYY
+          - If part1 > 12 and part2 <= 12  → DD/MM/YYYY
+          - If both <= 12                  → assume DD/MM/YYYY (Arabic convention)
         """
-        dates = []
+        dates: list[str] = []
+        seen: set[str] = set()
         for m in RE_DATE_DMY.finditer(text):
-            day, month, year = m.group(1), m.group(2), m.group(3)
             try:
-                # basic validation
-                d, mo, y = int(day), int(month), int(year)
-                if 1 <= d <= 31 and 1 <= mo <= 12 and 1900 <= y <= 2099:
-                    dates.append(f"{y:04d}-{mo:02d}-{d:02d}")
+                p1, p2 = int(m.group(1)), int(m.group(2))
+                y = int(m.group(3))
+                if not (1900 <= y <= 2099):
+                    continue
+                if p2 > 12 and p1 <= 12:
+                    # Clearly MM/DD/YYYY (e.g. 04/30/2025)
+                    month, day = p1, p2
+                elif p1 > 12 and p2 <= 12:
+                    # Clearly DD/MM/YYYY
+                    day, month = p1, p2
+                elif p1 <= 12 and p2 <= 12:
+                    # Ambiguous — default to DD/MM/YYYY (standard Arabic doc format)
+                    day, month = p1, p2
+                else:
+                    continue
+                if not (1 <= day <= 31 and 1 <= month <= 12):
+                    continue
+                iso = f"{y:04d}-{month:02d}-{day:02d}"
+                if iso not in seen:
+                    seen.add(iso)
+                    dates.append(iso)
             except ValueError:
                 pass
         return dates
@@ -476,10 +574,29 @@ class ArabicTextUtils:
     # ── Entity detection ───────────────────────────────────────────────────
 
     @staticmethod
+    def validate_entity_candidate(name: str) -> bool:
+        """
+        Return False if entity name looks like a greedy false-positive.
+        Checks word count, length, and presence of known bad/verb words.
+        """
+        if not (5 <= len(name) <= 70):
+            return False
+        words = name.split()
+        if len(words) > 4:
+            return False
+        for word in words:
+            if word in _ENTITY_BAD_WORDS:
+                return False
+        return True
+
+    @staticmethod
     def extract_entities(text: str) -> list[dict]:
         """
         Extract named organizational entities from text.
         Returns list of {'entity_name_ar': str, 'entity_type': str, 'start': int}.
+
+        Uses \\b word-boundary patterns to avoid matching 'وزارة' inside 'الوزارة'.
+        Calls validate_entity_candidate() to reject greedy captures.
         """
         results = []
 
@@ -495,9 +612,11 @@ class ArabicTextUtils:
         for pattern, etype in patterns:
             for m in pattern.finditer(text):
                 name = m.group(0).strip()
-                # Trim trailing noise (commas, periods, parentheses)
-                name = re.sub(r"[\،,\.\)\(]+$", "", name).strip()
-                if name not in seen and len(name) >= 5:
+                # Trim trailing punctuation
+                name = re.sub(r"[\u060c,.\)\(\:\u060b]+$", "", name).strip()
+                if not ArabicTextUtils.validate_entity_candidate(name):
+                    continue
+                if name not in seen:
                     seen.add(name)
                     results.append({
                         "entity_name_ar": name,
@@ -565,7 +684,47 @@ class ArabicTextUtils:
         }
 
     # ── Utility ─────────────────────────────────────────────────────────────
+    @staticmethod
+    def extract_section_references(text: str) -> list[dict]:
+        """
+        Extract explicit article/paragraph references from section body text.
+        Captures patterns like:
+          المادة (23) من هذا القانون  → same-law reference
+          المادة (31) من الدستور     → constitution reference
+          المادة (5)                     → generic article reference
+        Returns list of {'ref_text': str, 'article_number': str, 'ref_type': str}.
+        """
+        results: list[dict] = []
+        seen: set[str] = set()
 
+        # Pattern: المادة/الفقرة (N) [optional context]
+        re_art_ref = re.compile(
+            r'(?:المادة|الفقرة|البند)\s*[\(\uff08]?\s*('
+            + _NUM_PAT + r'|' + _ORDINAL_PAT +
+            r')\s*[\)\uff09]?\s*(?:(من\s+[\u0600-\u06FF]+(?:\s+[\u0600-\u06FF]+){0,3}))?',
+            re.UNICODE,
+        )
+        for m in re_art_ref.finditer(text):
+            ref_text = m.group(0).strip()
+            art_num  = ArabicTextUtils.convert_arabic_to_western_digits(m.group(1))
+            context  = (m.group(len(m.groups())) or "").strip()
+            if ref_text in seen or len(art_num) > 5:
+                continue
+            seen.add(ref_text)
+            if "هذا القانون" in context or "هذا النظام" in context or "أعلاه" in context or "أدناه" in context:
+                ref_type = "same_law"
+            elif "الدستور" in context:
+                ref_type = "constitution"
+            else:
+                ref_type = "article_reference"
+            results.append({
+                "ref_text": ref_text,
+                "article_number": art_num,
+                "ref_type": ref_type,
+            })
+        return results
+
+    # ── Utility ─────────────────────────────────────────────────────────────────
     @staticmethod
     def contains_arabic(text: str) -> bool:
         """Return True if text contains at least one Arabic character."""

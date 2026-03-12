@@ -33,6 +33,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -325,15 +326,19 @@ class LegislationStructurer:
         normalized_text: str,
     ) -> tuple[list[Topic], list[TopicAssignment]]:
         """
-        Match document against topic taxonomy using keyword scoring.
-        Returns (topic_records, topic_assignments).
+        Match document against topic taxonomy using weighted keyword scoring.
+
+        Scoring zones (per keyword hit):
+          Title match           → +0.40  (very high signal)
+          Early text (first 800 chars) → +0.20  (definitions, objectives area)
+          Full body match       → +0.05  (lower weight)
+
+        A single title keyword match (0.40) already exceeds the threshold (0.4),
+        so any law whose domain word appears in its own title gets a topic.
         """
-        # Use title + first 2000 chars of normalized body for topic matching
-        match_text = (
-            ATU.normalize(document.title_ar or "")
-            + "\n"
-            + normalized_text[:2000]
-        )
+        title_norm = ATU.normalize(document.title_ar or "")
+        early_norm = ATU.normalize(normalized_text[:800])
+        body_norm  = ATU.normalize(normalized_text)
 
         scored: list[tuple[float, dict]] = []
 
@@ -342,26 +347,17 @@ class LegislationStructurer:
             if not keywords:
                 continue
 
-            hits = 0
+            confidence = 0.0
             for kw in keywords:
                 norm_kw = ATU.normalize(kw)
-                if norm_kw in match_text:
-                    hits += 1
+                if norm_kw in title_norm:
+                    confidence += 0.40   # title match = highest weight
+                elif norm_kw in early_norm:
+                    confidence += 0.20   # early text (defs/objectives) = medium
+                elif norm_kw in body_norm:
+                    confidence += 0.05   # full body = lower weight
 
-            if hits == 0:
-                continue
-
-            # Base score: fraction of keywords matched
-            base_score = hits / len(keywords)
-
-            # Bonus: keyword in title → +0.2
-            title_norm = ATU.normalize(document.title_ar or "")
-            for kw in keywords:
-                if ATU.normalize(kw) in title_norm:
-                    base_score = min(1.0, base_score + 0.2)
-                    break
-
-            confidence = round(min(1.0, base_score), 3)
+            confidence = round(min(1.0, confidence), 3)
             if confidence >= self.settings.TOPIC_CONFIDENCE_THRESHOLD:
                 scored.append((confidence, topic_def))
 
@@ -397,7 +393,7 @@ class LegislationStructurer:
                 extraction_method=ExtractionMethod.KEYWORD,
                 matched_keywords=json.dumps(
                     [kw for kw in td.get("keywords_ar", [])
-                     if ATU.normalize(kw) in match_text],
+                     if ATU.normalize(kw) in body_norm],
                     ensure_ascii=False,
                 ),
             ))
@@ -428,7 +424,10 @@ class LegislationStructurer:
         # ── BASED_ON from legal basis clauses ────────────────────────────
         basis_hits = ATU.extract_legal_basis(original_text)
         for hit in basis_hits:
-            refs = ATU.extract_cross_references(hit["basis_text"])
+            basis_text = hit["basis_text"]
+
+            # Check for a specific law number reference (e.g. القانون رقم 34 لسنة 2019)
+            refs = ATU.extract_cross_references(basis_text)
             for ref in refs:
                 target_slug = _make_target_slug(ref)
                 self._add_relationship(
@@ -436,8 +435,19 @@ class LegislationStructurer:
                     source=document,
                     target_slug=target_slug,
                     rel_type=RelType.BASED_ON,
-                    extracted_text=hit["basis_text"][:300],
+                    extracted_text=basis_text[:300],
                     confidence=0.85,
+                )
+
+            # Direct Constitution reference (صادر بمقتضى المادة (31) من الدستور)
+            if re.search(r"\u0627\u0644\u062f\u0633\u062a\u0648\u0631", basis_text):
+                self._add_relationship(
+                    relationships, seen_rels,
+                    source=document,
+                    target_slug="constitution-hashemite-kingdom-1952",
+                    rel_type=RelType.BASED_ON,
+                    extracted_text=basis_text[:300],
+                    confidence=0.90,
                 )
 
         # ── AMENDS / REPEALS from full text ──────────────────────────────
