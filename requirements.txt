@@ -1,0 +1,23 @@
+# ── Core web automation ──────────────────────────────────────────────────────
+playwright>=1.41.0          # Dynamic JavaScript-rendered page fetching
+beautifulsoup4>=4.12.0      # HTML parsing
+lxml>=5.1.0                 # Fast XML/HTML parser backend for BS4
+
+# ── Arabic text processing ───────────────────────────────────────────────────
+pyarabic>=0.6.15            # Alef normalization, harakat removal, tatweel removal
+regex>=2023.12.25           # Extended Unicode regex (Arabic numerals, ranges)
+
+# ── Data handling ─────────────────────────────────────────────────────────────
+pandas>=2.1.0               # CSV export and data manipulation
+python-slugify>=8.0.0       # URL-safe slug generation from Arabic strings
+
+# ── Configuration & environment ───────────────────────────────────────────────
+pyyaml>=6.0.1               # Topic taxonomy config (config/topics.yaml)
+python-dotenv>=1.0.0        # Load .env for LOB credentials / proxy settings
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+loguru>=0.7.2               # Structured, rotating logs with async support
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+tqdm>=4.66.1                # Progress bars for batch operations
+python-dateutil>=2.9.0      # Flexible date parsing (Gregorian and converted Hijri)

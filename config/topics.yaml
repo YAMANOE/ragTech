@@ -1,0 +1,350 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Jordanian Legislation Topic Taxonomy
+# config/topics.yaml
+#
+# Structure:
+#   - id:          unique slug (used as topic_id base)
+#   - name_ar:     Arabic label displayed to users
+#   - name_en:     English label
+#   - level:       1 = primary category, 2 = sub-category
+#   - parent:      parent topic id (null for top-level)
+#   - keywords_ar: list of Arabic keyword/phrase patterns for rule-based matching
+#                  Patterns are matched against normalized full text (regex, re.search)
+#
+# Matching logic:
+#   - Match against: title_ar + preamble_text + first 1000 chars of body
+#   - Confidence = (matched_keywords / total_keywords) * base_score
+#   - Title match boosts confidence by +0.2
+#   - Threshold: 0.40 for inclusion, highest = primary topic
+# ─────────────────────────────────────────────────────────────────────────────
+
+topics:
+
+  # ── Level 1: Primary Categories ────────────────────────────────────────────
+
+  - id: constitutional-administrative-law
+    name_ar: القانون الدستوري والإداري
+    name_en: Constitutional & Administrative Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - دستور
+      - نظام عام
+      - إدارة عامة
+      - الخدمة المدنية
+      - الوظيفة العامة
+      - الموظف العام
+      - الجهاز الحكومي
+      - اللامركزية
+      - البلديات
+      - المجالس البلدية
+      - الاختصاصات الإدارية
+      - الترخيص الإداري
+
+  - id: civil-law
+    name_ar: القانون المدني
+    name_en: Civil Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - قانون مدني
+      - العقود
+      - الالتزامات
+      - الضمان
+      - التعويض
+      - المسؤولية المدنية
+      - الإيجار
+      - البيع
+      - الرهن
+      - الكفالة
+      - حقوق عينية
+      - الملكية
+      - التقادم
+
+  - id: commercial-law
+    name_ar: القانون التجاري
+    name_en: Commercial Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - الشركات
+      - قانون الشركات
+      - الأوراق التجارية
+      - الكمبيالة
+      - الشيك
+      - الإفلاس
+      - الإعسار
+      - البورصة
+      - قانون التجارة
+      - الوكالة التجارية
+      - علامة تجارية
+      - براءة اختراع
+      - الاستثمار
+
+  - id: criminal-law
+    name_ar: القانون الجنائي والعقوبات
+    name_en: Criminal & Penal Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - عقوبات
+      - جرائم
+      - جنحة
+      - جناية
+      - مخالفة
+      - قانون العقوبات
+      - الإجراءات الجزائية
+      - محكمة جزائية
+      - التحقيق الجنائي
+      - الغرامة
+      - الحبس
+      - السجن
+      - الاحتجاز
+
+  - id: labor-social-insurance
+    name_ar: قانون العمل والتأمينات الاجتماعية
+    name_en: Labor & Social Insurance Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - قانون العمل
+      - العامل
+      - صاحب العمل
+      - عقد العمل
+      - أجر
+      - إجازة
+      - فصل من العمل
+      - الضمان الاجتماعي
+      - التأمين الاجتماعي
+      - المؤسسة العامة للضمان الاجتماعي
+      - التدريب المهني
+      - السلامة المهنية
+      - حوادث العمل
+
+  - id: tax-financial-law
+    name_ar: القانون الضريبي والمالي
+    name_en: Tax & Financial Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - ضريبة الدخل
+      - ضريبة المبيعات
+      - الضريبة العامة
+      - الجمارك
+      - الرسوم الجمركية
+      - الموازنة العامة
+      - المالية العامة
+      - الضريبة
+      - الإيرادات العامة
+      - الديوان
+      - دائرة ضريبة الدخل
+      - التهرب الضريبي
+      - الإعفاء الضريبي
+
+  - id: investment-law
+    name_ar: قانون الاستثمار
+    name_en: Investment Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - الاستثمار
+      - قانون الاستثمار
+      - المستثمر
+      - هيئة الاستثمار
+      - المناطق الاقتصادية الخاصة
+      - العقبة الاقتصادية
+      - الإعفاءات الاستثمارية
+      - الشراكة العامة الخاصة
+      - FDI
+      - رأس المال الأجنبي
+
+  - id: banking-financial-services
+    name_ar: القانون المصرفي والخدمات المالية
+    name_en: Banking & Financial Services Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - البنوك
+      - قانون البنوك
+      - البنك المركزي
+      - الائتمان
+      - الفائدة
+      - الودائع
+      - التمويل
+      - الخدمات المالية
+      - التأمين
+      - شركات التأمين
+      - غسيل الأموال
+      - تمويل الإرهاب
+      - العملة
+
+  - id: environmental-law
+    name_ar: قانون البيئة والموارد الطبيعية
+    name_en: Environmental & Natural Resources Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - البيئة
+      - قانون البيئة
+      - التلوث
+      - الموارد الطبيعية
+      - المياه
+      - حماية البيئة
+      - النفايات
+      - الطاقة المتجددة
+      - المحميات الطبيعية
+      - التصحر
+      - حماية المياه
+
+  - id: health-law
+    name_ar: قانون الصحة العامة
+    name_en: Public Health Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - الصحة العامة
+      - وزارة الصحة
+      - المستشفيات
+      - الأدوية
+      - الصيدلة
+      - الترخيص الصحي
+      - الرعاية الصحية
+      - الخدمات الطبية
+      - السلامة الغذائية
+      - المهن الصحية
+      - المختبرات
+
+  - id: education-law
+    name_ar: قانون التعليم
+    name_en: Education Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - التعليم
+      - وزارة التربية
+      - الجامعات
+      - التعليم العالي
+      - المدارس
+      - المناهج
+      - المعلمون
+      - الطلاب
+      - المنح الدراسية
+      - الاعتماد الأكاديمي
+
+  - id: personal-status-law
+    name_ar: قانون الأحوال الشخصية
+    name_en: Personal Status Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - الأحوال الشخصية
+      - الزواج
+      - الطلاق
+      - النفقة
+      - الحضانة
+      - الإرث
+      - الميراث
+      - الوصية
+      - الوقف
+      - الأسرة
+      - قانون الأسرة
+      - محكمة شرعية
+
+  - id: land-planning-law
+    name_ar: قانون الأراضي والتخطيط العمراني
+    name_en: Land & Urban Planning Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - الأراضي
+      - تسجيل الأراضي
+      - التخطيط العمراني
+      - البناء والتشييد
+      - الترخيص الإنشائي
+      - العقارات
+      - مناطق التطوير
+      - الخرائط الجغرافية
+      - تقسيم الأراضي
+      - نزع الملكية
+
+  - id: it-digital-law
+    name_ar: قانون تكنولوجيا المعلومات والاتصالات
+    name_en: Information Technology & Communications Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - تكنولوجيا المعلومات
+      - الاتصالات
+      - الجرائم الإلكترونية
+      - المعاملات الإلكترونية
+      - التوقيع الإلكتروني
+      - حماية البيانات
+      - الخصوصية
+      - هيئة الاتصالات
+      - الإنترنت
+      - الحكومة الإلكترونية
+      - الذكاء الاصطناعي
+
+  - id: energy-law
+    name_ar: قانون الطاقة والمناجم
+    name_en: Energy & Mining Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - الطاقة
+      - الكهرباء
+      - قانون الكهرباء
+      - المناجم
+      - الثروات المعدنية
+      - النفط والغاز
+      - الطاقة المتجددة
+      - الطاقة الشمسية
+      - الطاقة الذرية
+      - هيئة تنظيم الطاقة
+
+  - id: transport-law
+    name_ar: قانون النقل والمواصلات
+    name_en: Transport & Traffic Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - النقل
+      - المرور
+      - قانون السير
+      - الطرق
+      - الجسور
+      - الطيران
+      - الموانئ
+      - السكة الحديد
+      - رخصة قيادة
+      - تسجيل المركبات
+
+  - id: public-procurement-contracting
+    name_ar: المشتريات الحكومية والعقود
+    name_en: Public Procurement & Government Contracting
+    level: 1
+    parent: null
+    keywords_ar:
+      - المشتريات الحكومية
+      - العطاءات
+      - العقود الحكومية
+      - المناقصات
+      - دائرة اللوازم الحكومية
+      - الشراء العام
+
+  - id: judiciary-legal-profession
+    name_ar: القضاء والمهن القانونية
+    name_en: Judiciary & Legal Profession
+    level: 1
+    parent: null
+    keywords_ar:
+      - القضاء
+      - المحاكم
+      - إجراءات المحاكمة
+      - المحامون
+      - قانون المحاماة
+      - النيابة العامة
+      - المدعي العام
+      - التنفيذ القضائي
+      - التحكيم
+      - الوساطة

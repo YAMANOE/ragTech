@@ -1,0 +1,40 @@
+# ── Data directories (can be large) ──────────────────────────────────────────
+data/raw/html/
+data/raw/text/
+data/clean/
+data/structured/docs/
+
+# ── Export directories ─────────────────────────────────────────────────────────
+exports/
+
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+.Python
+
+# ── IDE / OS ──────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Playwright ───────────────────────────────────────────────────────────────
+.playwright/
