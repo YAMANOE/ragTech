@@ -132,7 +132,9 @@ class Document:
     repeal_date: Optional[str] = None               # ISO 8601 date, null if active
 
     # ── Status ───────────────────────────────────────────────────────────
-    status: str = DocStatus.ACTIVE   # See DocStatus constants
+    status: str = DocStatus.ACTIVE          # See DocStatus constants
+    status_normalized: str = ""             # Canonical DocStatus value (mirrors status)
+    source_status_text: Optional[str] = None  # Raw Arabic status text from source, e.g. "نافذ"
 
     # ── Legal basis ──────────────────────────────────────────────────────
     legal_basis_text: Optional[str] = None   # Full extracted استناداً clause
@@ -155,10 +157,9 @@ class Document:
     notes: str = ""
 
     def to_dict(self) -> dict:
-        d = asdict(self)
-        d["applicability_sectors"] = json.dumps(d["applicability_sectors"], ensure_ascii=False)
-        d["applicability_entities"] = json.dumps(d["applicability_entities"], ensure_ascii=False)
-        return d
+        # Return real Python types — lists stay as lists for canonical JSON.
+        # The CSV exporter's _safe_row handles list → json.dumps for CSV output.
+        return asdict(self)
 
 
 @dataclass
@@ -315,7 +316,7 @@ class TopicAssignment:
     is_primary: bool = False
     confidence: float = 0.0
     extraction_method: str = ExtractionMethod.KEYWORD
-    matched_keywords: Optional[str] = None   # JSON array of matched terms
+    matched_keywords: Optional[List[str]] = None   # Real list of matched keyword strings
 
     def to_dict(self) -> dict:
         return asdict(self)

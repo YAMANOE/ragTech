@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-03-12T07:12:19.187744+00:00",
+  "count": 1,
+  "documents": [
+    {
+      "doc_slug": "legislation-3452",
+      "doc_id": "3e9cfab8-67a9-56d7-97a6-588b432fbbc8",
+      "title_ar": "قانون صندوق التكافل للحد من المخاطر الزراعية رقم 5 لسنة 2025",
+      "doc_type": "law",
+      "doc_number": "5",
+      "issue_year": 2025,
+      "publication_date": "2025-04-30",
+      "status": "active",
+      "status_normalized": "active",
+      "source_status_text": "نافذ",
+      "primary_topic": "topic-agricultural-insurance-law",
+      "primary_topic_ar": "قانون الزراعة والتأمين الزراعي وصناديق التكافل",
+      "section_count": 16,
+      "relationship_count": 1,
+      "json_path": "docs/legislation-3452.json",
+      "summary_path": "summaries/legislation-3452_summary.json"
+    }
+  ]
+}

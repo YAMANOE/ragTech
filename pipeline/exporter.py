@@ -330,8 +330,8 @@ _REL_DOCUMENT_FIELDS = [
     "doc_id", "doc_slug", "title_ar", "title_en", "doc_type",
     "doc_number", "issue_year", "issuing_entity_id", "issuing_entity_name_ar",
     "official_gazette_number", "publication_date", "effective_date", "repeal_date",
-    "status", "legal_basis_text", "applicability_scope",
-    "applicability_sectors", "applicability_entities",
+    "status", "status_normalized", "source_status_text", "legal_basis_text",
+    "applicability_scope", "applicability_sectors", "applicability_entities",
     "source_url", "fetch_date", "raw_html_path", "raw_text_path",
     "has_attachment", "needs_review", "notes",
 ]

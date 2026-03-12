@@ -72,6 +72,8 @@ class Settings:
 
     STRUCTURED_DIR: Path = DATA_DIR / "structured"
     STRUCTURED_DOCS_DIR: Path = STRUCTURED_DIR / "docs"
+    STRUCTURED_SUMMARIES_DIR: Path = STRUCTURED_DIR / "summaries"
+    STRUCTURED_INDEX_PATH: Path = STRUCTURED_DIR / "documents_index.json"
     STRUCTURED_DOCUMENTS_PATH: Path = STRUCTURED_DIR / "documents.json"
     STRUCTURED_VERSIONS_PATH: Path = STRUCTURED_DIR / "versions.json"
     STRUCTURED_SECTIONS_PATH: Path = STRUCTURED_DIR / "sections.json"
@@ -146,6 +148,7 @@ class Settings:
         dirs = [
             self.RAW_HTML_DIR, self.RAW_TEXT_DIR,
             self.CLEAN_DIR, self.STRUCTURED_DOCS_DIR,
+            self.STRUCTURED_SUMMARIES_DIR,
             self.RELATIONAL_DIR, self.GRAPH_DIR, self.GRAPH_FUTURE_DIR,
             self.LOGS_DIR,
         ]

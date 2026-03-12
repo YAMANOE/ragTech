@@ -285,6 +285,13 @@ class LOBParser:
         elif ATU.detect_amendment(combined):
             status = "amended"
 
+        _STATUS_TEXT_AR = {
+            "active":   "نافذ",
+            "repealed": "ملغى",
+            "amended":  "معدّل",
+        }
+        source_status_text = _STATUS_TEXT_AR.get(status, "")
+
         return {
             "title_ar":              title_ar.strip(),
             "doc_type":              doc_type,
@@ -294,6 +301,7 @@ class LOBParser:
             "publication_date":      publication_date,
             "effective_date":        effective_date,
             "status":                status,
+            "source_status_text":    source_status_text,
             "legal_basis_text":      legal_basis_text,
             "issuing_entity_name_ar": issuing_entity_name_ar,
         }

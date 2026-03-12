@@ -183,6 +183,8 @@ class LegislationStructurer:
             publication_date=metadata.get("publication_date"),
             effective_date=metadata.get("effective_date"),
             status=metadata.get("status", DocStatus.ACTIVE),
+            status_normalized=metadata.get("status", DocStatus.ACTIVE),
+            source_status_text=metadata.get("source_status_text", ""),
             legal_basis_text=metadata.get("legal_basis_text"),
             source_url=source_url,
             fetch_date=clean_output.cleaned_at,
@@ -391,11 +393,10 @@ class LegislationStructurer:
                 is_primary=(i == 0),
                 confidence=confidence,
                 extraction_method=ExtractionMethod.KEYWORD,
-                matched_keywords=json.dumps(
-                    [kw for kw in td.get("keywords_ar", [])
-                     if ATU.normalize(kw) in body_norm],
-                    ensure_ascii=False,
-                ),
+                matched_keywords=[
+                    kw for kw in td.get("keywords_ar", [])
+                    if ATU.normalize(kw) in body_norm
+                ],
             ))
 
         return topic_records, assignments
@@ -559,6 +560,9 @@ class LegislationStructurer:
             json.dump(payload, f, ensure_ascii=False, indent=2)
         logger.debug(f"[Structurer] Saved structured doc: {path}")
 
+        self._save_summary(result, payload["structured_at"])
+        self._update_documents_index(result)
+
     def load_structured(self, doc_slug: str) -> Optional[dict]:
         """Load a previously saved structured document."""
         path = self.settings.STRUCTURED_DOCS_DIR / f"{doc_slug}.json"
@@ -566,6 +570,97 @@ class LegislationStructurer:
             return None
         with open(path, encoding="utf-8") as f:
             return json.load(f)
+
+    def _save_summary(self, result: PipelineResult, structured_at: str) -> None:
+        """Write a lightweight per-legislation summary JSON for quick browsing."""
+        doc = result.document
+        if not doc:
+            return
+
+        primary = next((a for a in result.topic_assignments if a.is_primary), None)
+        article_count = sum(
+            1 for s in result.sections if s.section_type == SectionType.ARTICLE
+        )
+
+        summary = {
+            "doc_slug":                doc.doc_slug,
+            "doc_id":                  doc.doc_id,
+            "title_ar":                doc.title_ar,
+            "title_en":                doc.title_en,
+            "doc_type":                doc.doc_type,
+            "doc_number":              doc.doc_number,
+            "issue_year":              doc.issue_year,
+            "official_gazette_number": doc.official_gazette_number,
+            "publication_date":        doc.publication_date,
+            "effective_date":          doc.effective_date,
+            "status":                  doc.status,
+            "status_normalized":       doc.status_normalized,
+            "source_status_text":      doc.source_status_text,
+            "legal_basis_text":        doc.legal_basis_text,
+            "primary_topic":           primary.topic_id if primary else None,
+            "primary_topic_ar":        primary.topic_name_ar if primary else None,
+            "primary_topic_confidence": primary.confidence if primary else None,
+            "entity_count":            len(result.entities),
+            "section_count":           len(result.sections),
+            "article_count":           article_count,
+            "relationship_count":      len(result.relationships),
+            "has_legal_basis":         bool(doc.legal_basis_text),
+            "source_url":              doc.source_url,
+            "json_path":               f"docs/{doc.doc_slug}.json",
+            "summary_path":            f"summaries/{doc.doc_slug}_summary.json",
+            "structured_at":           structured_at,
+        }
+
+        path = self.settings.STRUCTURED_SUMMARIES_DIR / f"{doc.doc_slug}_summary.json"
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(summary, f, ensure_ascii=False, indent=2)
+        logger.debug(f"[Structurer] Saved summary: {path}")
+
+    def _update_documents_index(self, result: PipelineResult) -> None:
+        """Upsert current document into data/structured/documents_index.json."""
+        doc = result.document
+        if not doc:
+            return
+
+        primary = next((a for a in result.topic_assignments if a.is_primary), None)
+
+        entry = {
+            "doc_slug":           doc.doc_slug,
+            "doc_id":             doc.doc_id,
+            "title_ar":           doc.title_ar,
+            "doc_type":           doc.doc_type,
+            "doc_number":         doc.doc_number,
+            "issue_year":         doc.issue_year,
+            "publication_date":   doc.publication_date,
+            "status":             doc.status,
+            "status_normalized":  doc.status_normalized,
+            "source_status_text": doc.source_status_text,
+            "primary_topic":      primary.topic_id if primary else None,
+            "primary_topic_ar":   primary.topic_name_ar if primary else None,
+            "section_count":      len(result.sections),
+            "relationship_count": len(result.relationships),
+            "json_path":          f"docs/{doc.doc_slug}.json",
+            "summary_path":       f"summaries/{doc.doc_slug}_summary.json",
+        }
+
+        index_path = self.settings.STRUCTURED_INDEX_PATH
+        if index_path.exists():
+            with open(index_path, encoding="utf-8") as f:
+                index = json.load(f)
+        else:
+            index = {"generated_at": "", "count": 0, "documents": []}
+
+        docs = [d for d in index.get("documents", []) if d.get("doc_slug") != doc.doc_slug]
+        docs.append(entry)
+        docs.sort(key=lambda x: (x.get("issue_year") or 0, x.get("doc_slug", "")))
+
+        index["generated_at"] = datetime.now(timezone.utc).isoformat()
+        index["count"] = len(docs)
+        index["documents"] = docs
+
+        with open(index_path, "w", encoding="utf-8") as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
+        logger.debug(f"[Structurer] Updated documents index: {index_path}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
