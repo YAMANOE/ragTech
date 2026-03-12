@@ -86,6 +86,10 @@ class Settings:
     GRAPH_DIR: Path = EXPORTS_DIR / "graph"
     GRAPH_FUTURE_DIR: Path = GRAPH_DIR / "future"
 
+    # ── Batch runner outputs ──────────────────────────────────────────────────
+    INDEXES_DIR: Path = DATA_DIR / "indexes"
+    REPORTS_DIR: Path = DATA_DIR / "reports"
+
     # ── Logs ────────────────────────────────────────────────────────────────
     LOGS_DIR: Path = PROJECT_ROOT / "logs"
 
@@ -150,6 +154,7 @@ class Settings:
             self.CLEAN_DIR, self.STRUCTURED_DOCS_DIR,
             self.STRUCTURED_SUMMARIES_DIR,
             self.RELATIONAL_DIR, self.GRAPH_DIR, self.GRAPH_FUTURE_DIR,
+            self.INDEXES_DIR, self.REPORTS_DIR,
             self.LOGS_DIR,
         ]
         for d in dirs:
