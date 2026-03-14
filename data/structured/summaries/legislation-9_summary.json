@@ -15,7 +15,7 @@
   "legal_basis_text": null,
   "primary_topic": "topic-constitutional-administrative-law",
   "primary_topic_ar": "القانون الدستوري والإداري",
-  "primary_topic_confidence": 0.4,
+  "primary_topic_confidence": 0.65,
   "entity_count": 43,
   "section_count": 96,
   "article_count": 79,
@@ -24,5 +24,5 @@
   "source_url": "https://www.lob.gov.jo/?v=2&lang=ar#!/LegislationDetails?LegislationID=9&LegislationType=1&isMod=false",
   "json_path": "docs/legislation-9.json",
   "summary_path": "summaries/legislation-9_summary.json",
-  "structured_at": "2026-03-14T17:57:08.401124+00:00"
+  "structured_at": "2026-03-14T19:47:54.853433+00:00"
 }

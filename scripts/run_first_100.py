@@ -88,13 +88,25 @@ _AR_TO_EN_TYPE: dict[str, str] = {
 }
 
 _AR_TO_EN_STATUS: dict[str, str] = {
-    "نافذ":   "active",
-    "نافذة":  "active",
-    "ملغى":   "repealed",
-    "ملغية":  "repealed",
-    "معدّل":  "amended",
-    "معدل":   "amended",
-    "مؤقت":   "draft",
+    "نافذ":      "active",
+    "نافذة":     "active",
+    "ساري":      "active",
+    "سارية":     "active",
+    "ملغى":      "repealed",
+    "ملغي":      "repealed",
+    "ملغية":     "repealed",
+    "غير ساري":  "repealed",
+    "غير سارية": "repealed",
+    "منتهي":     "repealed",
+    "منتهية":    "repealed",
+    "معدّل":     "amended",
+    "معدل":      "amended",
+    "معدّلة":    "amended",
+    "معدلة":     "amended",
+    "موقوف":     "suspended",
+    "موقوفة":    "suspended",
+    "مؤقت":      "draft",
+    "مؤقتة":     "draft",
 }
 
 # Regex helpers

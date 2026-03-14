@@ -1,142 +1,249 @@
 # Jordanian RegTech — Legislative Intelligence Pipeline
 
-A complete, production-ready data pipeline for collecting, cleaning, structuring, and exporting
-Jordanian legislation from the Bureau of Legislation and Opinion (LOB). 
+A production-ready Python pipeline for scraping, cleaning, structuring, and exporting
+Jordanian legislation from the Bureau of Legislation and Opinion (LOB) website.
 
-**Layer 1: Legislative Intelligence** (current implementation)  
-**Layer 2: Institutional Compliance** (future extension — data model is compliance-ready)
+**Current state:** 100 laws scraped, 98% success rate, 99 structured documents in `data/structured/docs/`.
+Last batch completed: 2026-03-14 (23 minutes, 100 laws).
 
 ---
 
 ## Quick Start
 
+### 1. Install
+
 ```bash
-# 1. Install dependencies
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-
-# 2. Install Playwright browsers
 playwright install chromium
+```
 
-# 3. Copy environment file
+### 2. Configure
+
+```bash
 cp .env.example .env
+# Edit .env if you need to override defaults (base URL, timeouts)
+```
 
-# 4. Run the MVP (5 target laws)
-python scripts/run_mvp.py
+### 3. Run
 
-# 5. Run full pipeline on a custom URL
-python scripts/run_pipeline.py --url "https://lob.gov.jo/AR/..." --slug "law-2014-34"
+```bash
+# Scrape and process 5 laws (test run)
+python scripts/run_first_100.py --limit 5
+
+# Full batch: 100 laws (takes ~23 minutes)
+python scripts/run_first_100.py --limit 100
+
+# Resume an interrupted batch
+python scripts/run_first_100.py --resume --limit 100
+
+# Process a single known law
+python scripts/run_pipeline.py \
+  --url "https://www.lob.gov.jo/?v=2&lang=ar#!/LegislationDetails?LegislationID=36&LegislationType=1&isMod=false" \
+  --slug "legislation-36"
 ```
 
 ---
 
-## Project Structure
+## What the Pipeline Does
+
+It runs 6 stages on each document:
+
+1. **Fetch** — Playwright scrapes the AngularJS LOB page, saves raw HTML and text to `data/raw/`
+2. **Parse** — BeautifulSoup extracts the title, body text, metadata, and structural sections
+3. **Clean** — 10-rule Arabic text cleaning: removes HTML artifacts, diacritics, UI labels, normalizes spacing
+4. **Structure** — Assembles a complete typed document object: Document + DocumentVersion + Sections + Entities + Topics + Relationships
+5. **Validate** — Runs QA checks: required fields, valid status, Arabic text present, section ordering, no LOB UI artifacts leaked
+6. **Export** — Writes all output to relational CSVs (pipe-delimited) and graph CSVs (for Neo4j)
+
+---
+
+## Current Results (First 100 Laws Batch)
+
+| Metric | Value |
+|--------|-------|
+| Scraped from LOB | 100 |
+| Pipeline success | 98 / 100 (98%) |
+| Validation passed | 100% of successful runs |
+| Has publication date | 99% |
+| Has extracted entities | 73.5% |
+| Has topic assignment | 55.1% |
+| Has legal basis extracted | 32.7% |
+| Has inter-doc relationships | 12.2% |
+| Average sections per law | 59.4 |
+| Failed documents | law-2006-49, law-1972-21 |
+
+---
+
+## Output Files
+
+### Structured Documents
 
 ```
-new-project/
-├── ARCHITECTURE.md     ← Full design document (start here)
-├── config/             ← Settings + topic taxonomy
-├── models/             ← Dataclasses (Document, Version, Section, Entity, Topic, Relationship)
-├── utils/              ← Arabic text utilities + ID generation
-├── pipeline/           ← fetcher → parser → cleaner → structurer → exporter → validator
-├── scripts/            ← run_pipeline.py, run_mvp.py
-├── data/               ← raw/ clean/ structured/ (gitignored)
-└── exports/            ← relational/ graph/ (gitignored)
+data/structured/docs/law-2018-34.json    ← Full document object per law
+data/structured/summaries/               ← Lightweight summary per law
+data/structured/documents_index.json     ← Browsable index of all laws
+```
+
+### Relational CSV (exports/relational/)
+
+All files are pipe-delimited (`|`), UTF-8 with BOM. Import directly into PostgreSQL, SQLite, or Supabase.
+
+| File | Description | Rows (approx) |
+|------|-------------|---------------|
+| `documents.csv` | One row per law | ~132 (99 unique after dedup) |
+| `versions.csv` | One row per version. Currently v1 only | ~99 |
+| `sections.csv` | One row per structural unit (article, chapter, etc.) | ~5,800 actual rows* |
+| `section_compliance_flags.csv` | Compliance flag columns per section | ~5,800 |
+| `entities.csv` | Deduplicated named institutions | ~200+ |
+| `topics.csv` | Topic taxonomy nodes | ~22+ |
+| `document_topics.csv` | Doc-topic junction with confidence scores | ~100+ |
+| `document_relationships.csv` | Inter-doc edges (AMENDS, REPEALS, etc.) | ~50+ |
+
+*Note: `sections.csv` appears to have 93,000+ lines when counted with `wc -l` because the `original_text` field contains embedded newlines. Use pandas or `csv.reader` to count actual rows.
+
+### Graph CSV (exports/graph/)
+
+For direct Neo4j import using `neo4j-admin database import`. See ARCHITECTURE.md Section 20 for the import command.
+
+- **5 node files:** `nodes_documents.csv`, `nodes_versions.csv`, `nodes_sections.csv`, `nodes_entities.csv`, `nodes_topics.csv`
+- **11+ edge files:** `edges_has_version.csv`, `edges_has_section.csv`, `edges_issued_by.csv`, `edges_has_topic.csv`, `edges_amends.csv`, `edges_repeals.csv`, `edges_based_on.csv`, `edges_refers_to.csv`, `edges_implements.csv`, `edges_supplements.csv`, `edges_supersedes.csv`
+- **6 future edge headers** in `exports/graph/future/` (empty, for Layer 2 compliance extraction)
+
+### Raw and Clean Data
+
+```
+data/raw/html/     ← Saved HTML per fetch
+data/raw/text/     ← Saved plain text per fetch
+data/raw/source_registry.csv   ← Every fetch logged here
+data/clean/        ← {doc_slug}_clean.json per document
+data/clean/cleaning_log.csv    ← Every cleaning run logged here
+data/indexes/      ← search_results_first_100.json (LOB listing metadata)
+data/reports/      ← first_100_batch_report.json (quality metrics)
 ```
 
 ---
 
-## Pipeline Layers
+## How It Scrapes the LOB Website
 
-| Layer | Input | Output |
-|-------|-------|--------|
-| **Fetch** | LOB URL | raw HTML + text + source_registry.csv |
-| **Parse** | raw HTML | metadata dict + section list |
-| **Clean** | raw text | original + normalized text + cleaning_log.json |
-| **Structure** | parsed + clean | documents / versions / sections / entities / topics / relationships JSON |
-| **Export** | structured JSON | relational CSVs + graph node/edge CSVs |
-| **Validate** | all outputs | QA report with pass/fail per rule |
+The LOB website (`lob.gov.jo`) is an AngularJS 1.x single-page application. Search results are rendered after JavaScript executes and have no regular `<a href>` links. Standard scraping tools (requests, urllib) cannot see the content.
 
----
+The pipeline uses two strategies:
 
-## Output Packages
+**Listing scrape (discovering what to process):**  
+`LOBListingScraper` monkey-patches the AngularJS `$scope.LegislationLaw.LinkToDetails()` function before clicking every result row. This captures the raw Angular scope item objects (which contain all metadata fields) without actually navigating away.
 
-### Relational CSVs (`exports/relational/`)
-Direct import into PostgreSQL, SQLite, Supabase, or any RDBMS.
-
-| File | Description |
-|------|-------------|
-| `documents.csv` | One row per legislation document |
-| `versions.csv` | One row per version of each document |
-| `sections.csv` | One row per article / paragraph / clause |
-| `entities.csv` | Ministries, authorities, councils |
-| `topics.csv` | Legal topic taxonomy |
-| `document_topics.csv` | Multi-label topic assignments |
-| `document_entities.csv` | Document-entity relationships |
-| `document_relationships.csv` | AMENDS / REPEALS / BASED_ON / etc. |
-| `section_compliance_flags.csv` | Compliance-readiness flags (Layer 2 prep) |
-
-### Graph CSVs (`exports/graph/`)
-Neo4j `neo4j-admin import` format.
-
-| Node Files | Edge Files |
-|------------|------------|
-| `nodes_documents.csv` | `edges_has_version.csv` |
-| `nodes_versions.csv` | `edges_has_section.csv` |
-| `nodes_sections.csv` | `edges_issued_by.csv` |
-| `nodes_entities.csv` | `edges_amends.csv` |
-| `nodes_topics.csv` | `edges_repeals.csv` |
-| | `edges_based_on.csv` |
-| | `edges_refers_to.csv` |
-| | `edges_implements.csv` |
-| | `edges_has_topic.csv` |
-| | `future/edges_future_*.csv` ← headers only |
+**Detail page scrape (fetching each law):**  
+`LOBFetcher` uses Playwright with a headless Chromium browser, waits for `div.clicked-legislation-header` to appear, then extracts text via JavaScript (removing nav/header/footer) before saving.
 
 ---
 
-## Key Design Decisions
+## Data Formats
 
-- **Original text is always preserved.** Normalization is a second copy only.
-- **Stable identifiers** (`doc_slug`, `version_id`, `section_id`) survive re-runs.
-- **Compliance-ready schema** — Layer 2 fields exist in every section record (NULL now).
-- **Default to current version** — `is_current=True` flag on every version query.
-- **Arabic-first** — all patterns, cleaning rules, and ID generation handle Arabic legally.
-- **Graph-ready** — all exports are compatible with Neo4j import format.
+All CSV outputs use:
+- **Delimiter:** `|` (pipe) — never conflicts with Arabic text
+- **Encoding:** `utf-8-sig` (UTF-8 with BOM) — required for Excel to display Arabic correctly
+- **NULL:** empty string
 
----
-
-## Architecture Document
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full 20-section design guide including:
-- Data models and field definitions
-- Arabic text cleaning rules
-- LOB extraction strategy
-- Legal pattern batteries
-- Versioning strategy
-- Compliance-readiness design
-- QA rules
-- Edge cases
-- MVP plan
-
----
-
-## Adding New Laws
-
+Pipe-delimited means you must specify the separator explicitly when loading:
 ```python
-from pipeline.fetcher import LOBFetcher
-from pipeline.parser import LOBParser
-from pipeline.cleaner import ArabicTextCleaner
-from pipeline.structurer import LegislationStructurer
-from pipeline.exporter import LegislationExporter
-from config.settings import Settings
-
-settings = Settings()
-fetcher = LOBFetcher(settings)
-result = fetcher.fetch_sync("https://lob.gov.jo/AR/...", "law-2020-10")
-# Then: parse → clean → structure → export
+import pandas as pd
+df = pd.read_csv("exports/relational/documents.csv", sep="|", encoding="utf-8-sig")
 ```
 
 ---
 
-## License
+## Script Reference
 
-Internal project — not for distribution.
+| Script | What it does |
+|--------|-------------|
+| `scripts/run_first_100.py` | **Main batch runner.** Discovers 100 laws from LOB listing and runs the full pipeline on each |
+| `scripts/run_pipeline.py` | **Single document runner.** Takes `--url` + `--slug` arguments |
+| `scripts/check_output.py` | **Diagnostic.** Prints fields of a structured document for inspection |
+| `scripts/_inspect_html.py` | **Debug.** Examines saved HTML to find Angular directives |
+| `scripts/run_mvp.py` | **Broken.** MVP runner with 5 hardcoded laws — URLs are not filled in yet |
+
+---
+
+## Configuration
+
+All paths and parameters are in `config/settings.py`. Override with `.env`:
+
+```bash
+FETCH_DELAY_SECONDS=2        # Seconds between page fetches (be polite to LOB)
+PLAYWRIGHT_TIMEOUT=30000     # Wait timeout in ms (increase if pages load slowly)
+LOB_BASE_URL=https://lob.gov.jo
+```
+
+Topic taxonomy is in `config/topics.yaml`. Add keywords to improve topic coverage without code changes.
+
+---
+
+## What Needs Improvement
+
+### High Priority
+
+1. **Status mapping bug:** Laws with Arabic status "غير ساري" (not in effect) are stored as `status="active"`. Fix: add `"غير ساري": "repealed"` to the status mapping in `run_first_100.py`.
+
+2. **Topic coverage (55.1%):** 45% of laws have no topic assigned. Expanding keyword lists in `topics.yaml` is the easiest fix. Consider adding a fallback "general-legislation" topic for unmatched documents.
+
+3. **Legal basis extraction (32.7%):** The regex misses older legal formulations. Older laws from the 1950s–1970s use different phrasing not covered by the current trigger-word list.
+
+### Medium Priority
+
+4. **Relationship detection (12.2%):** Only 12 of 98 laws have detected inter-document relationships. Most cross-references are not being captured. The pattern `"القانون رقم N لسنة YYYY"` misses informal citations.
+
+5. **doc_number extraction for constitutions:** Constitutions have no "رقم" number in their title, so they get fallback slugs like `legislation-36` instead of `constitution-1952`. A year-only extraction pattern for دستور titles would fix this.
+
+6. **Date format ambiguity:** When day and month are both ≤ 12, the code assumes DD/MM/YYYY. LOB appears to use MM/DD/YYYY in some places, causing off-by-one-month errors.
+
+### Low Priority
+
+7. **Log file explosion:** Every pipeline component creates a new timestamped log file per instantiation. A 100-document batch creates 100+ log files. Fix: move `logger.add()` calls to the batch runner.
+
+8. **topics.csv duplicates:** Running `export_all()` appends duplicate topic rows. Use `sort -u` on topic_id or add a dedup set in the exporter.
+
+9. **run_mvp.py is not functional:** URLs in `MVP_TARGETS` are placeholder strings that need to be replaced with real LOB URLs.
+
+### Not Started (Layer 2)
+
+- Compliance section classification (obligation, prohibition, deadline, exception)
+- Amendment version tracking (fetching and storing version 2, 3, ...)
+- Arabic-to-English translation of titles
+- Hijri date conversion for publication dates in older laws
+- Named entity linking (associating extracted entity strings to a canonical entity registry)
+
+---
+
+## Architecture
+
+See `ARCHITECTURE.md` for the full technical specification including:
+- Complete class and method reference for all 10 classes
+- Exact database schema for all 12 record types
+- All CSV column orders for 8 relational tables and 17 graph files
+- LOB scraping strategy (AngularJS monkey-patch explained)
+- 10 Arabic cleaning rules with stage breakdown
+- Topic classification scoring algorithm
+- All 10 known bugs with locations and fixes
+
+---
+
+## Requirements
+
+```
+playwright>=1.41.0
+beautifulsoup4>=4.12.0
+lxml>=5.1.0
+pyarabic>=0.6.15
+loguru>=0.7.2
+PyYAML>=6.0.1
+python-slugify>=8.0.0
+pandas>=2.1.0
+regex>=2023.12.25
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+python-dateutil>=2.8.2
+```
+
+Python 3.10+ required.

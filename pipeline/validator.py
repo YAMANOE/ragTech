@@ -192,7 +192,7 @@ class PipelineValidator:
         )]
 
     def _check_status_valid(self, doc: Document) -> list[ValidationResult]:
-        valid_statuses = {"active", "amended", "repealed", "draft", "pending"}
+        valid_statuses = {"active", "amended", "repealed", "draft", "pending", "suspended"}
         passed = doc.status in valid_statuses
         return [ValidationResult(
             check_name="status_valid",
