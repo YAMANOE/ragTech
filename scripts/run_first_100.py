@@ -126,54 +126,47 @@ def _make_slug(item: dict) -> str:
 
 # ── LOB listing scraper ───────────────────────────────────────────────────────
 
+# URL candidates for the legislation listing / search page.
+# Tried in order until one yields results.
+_LISTING_URL_CANDIDATES = [
+    # The AngularJS hash-route search page
+    "https://www.lob.gov.jo/?v=2&lang=ar#!/SearchLegislation",
+    # Home page — sometimes the default view shows a full paginated table
+    "https://www.lob.gov.jo/?v=2&lang=ar",
+]
+
+
 class LOBListingScraper:
     """
-    Navigates the LOB Angular SPA search/listing page with Playwright and
-    returns a list of legislation item dicts.
+    LOB listing scraper — correctly extracts from the AngularJS SPA.
 
-    The LOB site is an AngularJS SPA.  Result rows are in a <table> rendered
-    by Angular inside the hash-route #!/SearchLegislation.  Each row contains
-    detail-page links whose hrefs contain LegislationID= — that's the stable
-    extraction anchor regardless of exact table layout.
+    Root issue: the search results table uses
+        ng-click="LegislationLaw.LinkToDetails(item)"
+    with NO href attributes.  There are no <a href="...LegislationID..."> links
+    in the DOM at all.  Every previous attempt that looked for href links or
+    tried to read window.angular (which is undefined in Playwright's eval
+    context) returned zero items.
+
+    Fix: monkey-patch LegislationLaw.LinkToDetails on the controller $scope
+    via jQuery's .scope() extension, click every result row programmatically,
+    and capture the raw AngularJS item objects that are passed to the function.
+    Those objects contain LegislationID, LegislationName, Year, etc.
+    We use a for...in loop (not Object.keys) so we traverse prototype-chain
+    properties, then filter out Angular internals ($$-prefixed keys) and
+    keep only primitive values — the result is a plain serialisable dict.
     """
 
-    # Candidate selectors for result table rows (tried in order)
-    _ROW_SELECTORS = [
-        "table.table tbody tr",
-        "table.legislation-list tbody tr",
-        "tbody tr.ng-scope",
-        "tbody tr[ng-repeat]",
-        "table tbody tr",
-    ]
+    # Go directly to the legislation search/listing page.
+    # The #!/SearchLegislation hash-route renders an EMPTY #Sections by default
+    # (we confirmed this from saved HTML); #!Jordanian-Legislation shows the
+    # search form immediately.
+    _URL = "https://www.lob.gov.jo/?v=0&lang=ar#!Jordanian-Legislation"
 
-    # Pagination "next page" button selectors
-    _NEXT_PAGE_SELECTORS = [
-        "a[aria-label='Next']",
-        "a[aria-label='التالي']",
-        "li.next:not(.disabled) a",
-        ".pagination li:last-child:not(.disabled) a",
-        "li.pagination-next:not(.disabled) a",
-        "a.next",
-    ]
-
-    # Search-trigger button selectors
-    _SEARCH_BTN_SELECTORS = [
-        "button[type='submit']",
-        "button.search-btn",
-        "button.btn-search",
-        "input[type='submit']",
-    ]
-
-    # Wait for this selector to confirm results have rendered
-    _RESULTS_READY_SELECTOR = (
-        "table.table tbody tr, "
-        "tbody tr.ng-scope, "
-        "div.no-data, "
-        "span.no-results"
-    )
-
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, headless: bool = False):
         self.settings = settings
+        self.headless = headless   # False = visible browser window (default for debugging)
+
+    # ── Public entry points ───────────────────────────────────────────────────
 
     def scrape_sync(
         self,
@@ -181,7 +174,6 @@ class LOBListingScraper:
         law_type_ar: Optional[str] = None,
         active_only: bool = False,
     ) -> list[dict]:
-        """Synchronous entry point."""
         return asyncio.run(self.scrape_listing(limit, law_type_ar, active_only))
 
     async def scrape_listing(
@@ -190,133 +182,501 @@ class LOBListingScraper:
         law_type_ar: Optional[str] = None,
         active_only: bool = False,
     ) -> list[dict]:
-        """
-        Navigate the LOB search page and extract up to `limit` legislation
-        items with metadata.
-
-        Returns list of dicts with keys:
-          legislation_id, legislation_type_id, title_ar, doc_type_ar,
-          doc_type_en, doc_number, issue_year, source_status_text,
-          status_normalized, detail_url, doc_slug
-        """
         from playwright.async_api import async_playwright
 
-        results: list[dict] = []
-        seen_ids: set[str] = set()
+        results:  list[dict] = []
+        seen_ids: set[str]   = set()
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=self.settings.PLAYWRIGHT_HEADLESS,
-            )
+            browser = await p.chromium.launch(headless=self.headless)
             context = await browser.new_context(
                 locale="ar-JO",
-                extra_http_headers={
-                    "Accept-Language": "ar,en;q=0.8",
-                    "User-Agent": (
-                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                        "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/120.0.0.0 Safari/537.36"
-                    ),
-                },
+                extra_http_headers={"Accept-Language": "ar,en;q=0.8"},
             )
             page = await context.new_page()
 
+            # ── 1. Navigate ───────────────────────────────────────────────
+            logger.info(f"[Scraper] Navigating to: {self._URL}")
             try:
-                logger.info(f"[Scraper] Navigating to: {_LOB_SEARCH_URL}")
                 await page.goto(
-                    _LOB_SEARCH_URL,
-                    wait_until="networkidle",
+                    self._URL,
+                    wait_until="domcontentloaded",
                     timeout=self.settings.PLAYWRIGHT_TIMEOUT,
                 )
+            except Exception as exc:
+                logger.error(f"[Scraper] Navigation failed: {exc}")
+                await browser.close()
+                return []
 
-                # Apply optional form filters
-                await self._apply_filters(page, law_type_ar, active_only)
+            # ── 2. Wait for the search form button to be visible ──────────
+            logger.info("[Scraper] Waiting for search form…")
+            try:
+                await page.wait_for_selector(
+                    "button[type='submit']",
+                    state="visible",
+                    timeout=30_000,
+                )
+                logger.info("[Scraper] Search form ready")
+            except Exception as exc:
+                logger.warning(f"[Scraper] Search form timeout: {exc}")
 
-                # Click "Search" if a search button is present
-                await self._trigger_search(page)
+            # ── 3. Diagnostic: before search ──────────────────────────────
+            await self._save_diagnostic(page, "01_before_search")
 
-                # Wait for Angular to render results
-                await self._wait_for_results(page)
+            # ── 4. Apply optional filters ─────────────────────────────────
+            await self._apply_filters(page, law_type_ar, active_only)
 
-                page_num = 0
-                while len(results) < limit:
-                    page_num += 1
+            # ── 5. Submit the search form ─────────────────────────────────
+            await self._submit_search(page)
+
+            # ── 6. Wait for result rows to appear ─────────────────────────
+            logger.info("[Scraper] Waiting for result rows…")
+            try:
+                await page.wait_for_selector(
+                    "tr[ng-click*='LegislationLaw'], tr[ng-repeat*='SearchResult']",
+                    state="visible",
+                    timeout=20_000,
+                )
+                await asyncio.sleep(1)  # let Angular finish rendering
+                logger.info("[Scraper] Result rows visible")
+            except Exception as exc:
+                logger.warning(f"[Scraper] Result rows timeout: {exc}")
+
+            # ── 7. Diagnostic: after search ───────────────────────────────
+            await self._save_diagnostic(page, "02_after_search")
+
+            # ── 8. Extract + paginate ─────────────────────────────────────
+            page_num = 0
+            while len(results) < limit:
+                page_num += 1
+                logger.info(
+                    f"[Scraper] Page {page_num} — "
+                    f"{len(results)}/{limit} collected so far"
+                )
+
+                new_items = await self._extract_current_page(
+                    page, seen_ids, active_only
+                )
+
+                if not new_items:
+                    logger.warning(
+                        f"[Scraper] Page {page_num}: 0 items extracted. "
+                        "Stopping pagination."
+                    )
+                    await self._log_page_debug(page)
+                    break
+
+                # Preview first item on first page
+                if page_num == 1:
+                    p0 = new_items[0]
                     logger.info(
-                        f"[Scraper] Page {page_num} — "
-                        f"{len(results)}/{limit} items so far"
+                        f"[Scraper] First item preview:\n"
+                        f"  id={p0['legislation_id']!r}\n"
+                        f"  title={p0['title_ar'][:70]!r}\n"
+                        f"  year={p0['issue_year']}  type={p0['doc_type_en']}"
+                        f"  status={p0['status_normalized']}\n"
+                        f"  url={p0['detail_url']!r}"
                     )
 
-                    new_items = await self._extract_rows(page, seen_ids)
-                    if not new_items:
-                        logger.info("[Scraper] No items found on this page — stopping.")
-                        break
-
-                    for item in new_items:
-                        if len(results) >= limit:
-                            break
-                        results.append(item)
-                        seen_ids.add(item["legislation_id"])
-
+                for item in new_items:
                     if len(results) >= limit:
                         break
+                    results.append(item)
+                    seen_ids.add(item["legislation_id"])
 
-                    has_next = await self._goto_next_page(page)
-                    if not has_next:
-                        logger.info("[Scraper] No next page button — end of listing.")
-                        break
+                if len(results) >= limit:
+                    break
 
-                    await asyncio.sleep(2)  # polite inter-page delay
+                has_next = await self._goto_next_page(page)
+                if not has_next:
+                    logger.info("[Scraper] No more pages.")
+                    break
 
-            except Exception as exc:
-                logger.error(f"[Scraper] Error during scraping: {exc}")
+                # Wait for next page results to render
                 try:
-                    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-                    ss = self.settings.LOGS_DIR / f"scraper_error_{ts}.png"
-                    await page.screenshot(path=str(ss), full_page=True)
-                    logger.info(f"[Scraper] Error screenshot saved: {ss}")
+                    await page.wait_for_selector(
+                        "tr[ng-click*='LegislationLaw']",
+                        state="visible",
+                        timeout=12_000,
+                    )
+                    await asyncio.sleep(1)
                 except Exception:
                     pass
-            finally:
-                await browser.close()
 
-        logger.info(f"[Scraper] Collected {len(results)} items")
+            await browser.close()
+
+        logger.info(f"[Scraper] Collected {len(results)} total items")
         return results[:limit]
 
-    # ── Internal helpers ──────────────────────────────────────────────────────
+    # ── Core extraction: monkey-patch + click ─────────────────────────────────
 
-    async def _apply_filters(
+    async def _extract_current_page(
         self,
         page,
-        law_type_ar: Optional[str],
+        seen_ids: set,
         active_only: bool,
+    ) -> list[dict]:
+        """
+        Extract all visible result rows by temporarily monkey-patching
+        LegislationLaw.LinkToDetails on the AngularJS controller $scope.
+
+        When we click each <tr ng-click="LegislationLaw.LinkToDetails(item)">,
+        Angular evaluates the expression and calls our patched function with the
+        real scope item object.  We capture those objects, restore the original
+        function, then serialise the captured items with for...in (which
+        traverses the prototype chain, unlike Object.keys which only returns
+        own enumerable properties and silently misses AngularJS scope fields).
+        """
+        js = """
+        () => {
+            try {
+                // ── find result rows ────────────────────────────────────
+                var rows = document.querySelectorAll('tr[ng-click*="LegislationLaw"]');
+                if (!rows.length) {
+                    rows = document.querySelectorAll('tr[ng-repeat*="SearchResult"]');
+                }
+                if (!rows.length) {
+                    return {ok: false, reason: 'no result rows in DOM', rowsFound: 0};
+                }
+
+                // ── walk up to the controller scope ────────────────────
+                var getScope = function(el) {
+                    if (window.jQuery) {
+                        try {
+                            var fn = window.jQuery(el).scope;
+                            if (fn) return fn.call(window.jQuery(el));
+                        } catch(e) {}
+                    }
+                    return null;
+                };
+
+                var ctrlScope = getScope(rows[0]);
+                if (!ctrlScope) {
+                    return {ok: false, reason: 'jQuery .scope() returned null — is jQuery loaded?'};
+                }
+                // Walk ancestors until we find LegislationLaw
+                var s = ctrlScope;
+                for (var d = 0; d < 15; d++) {
+                    if (s && s.LegislationLaw) break;
+                    if (s && s.$parent) { s = s.$parent; } else { s = null; break; }
+                }
+                if (!s || !s.LegislationLaw) {
+                    return {ok: false, reason: 'LegislationLaw not found on any ancestor scope'};
+                }
+
+                var llaw = s.LegislationLaw;
+                if (typeof llaw.LinkToDetails !== 'function') {
+                    return {ok: false, reason: 'LinkToDetails is not a function'};
+                }
+
+                // ── patch: capture items instead of navigating ─────────
+                var captured = [];
+                var origFn = llaw.LinkToDetails;
+                llaw.LinkToDetails = function(item) { captured.push(item); };
+
+                for (var i = 0; i < rows.length; i++) {
+                    rows[i].click();
+                }
+
+                llaw.LinkToDetails = origFn;   // restore immediately
+
+                if (captured.length === 0) {
+                    return {
+                        ok: false,
+                        reason: 'row clicks did not fire LinkToDetails — check ng-click binding',
+                        rowsFound: rows.length
+                    };
+                }
+
+                // ── serialise: for...in traverses prototype chain ──────
+                var items = [];
+                for (var ci = 0; ci < captured.length; ci++) {
+                    var raw = captured[ci];
+                    var clean = {};
+                    for (var k in raw) {
+                        if (k.slice(0, 2) === '$$') continue;   // skip Angular internals
+                        var v = raw[k];
+                        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+                            clean[k] = v;
+                        }
+                    }
+                    items.push(clean);
+                }
+
+                // Return first item's keys to help debugging
+                var firstKeys = items.length > 0 ? Object.keys(items[0]) : [];
+
+                return {
+                    ok: true,
+                    rowsFound: rows.length,
+                    captured: captured.length,
+                    firstKeys: firstKeys,
+                    items: items
+                };
+
+            } catch(e) {
+                return {ok: false, reason: 'exception: ' + e.toString()};
+            }
+        }
+        """
+        try:
+            result = await page.evaluate(js)
+        except Exception as exc:
+            logger.warning(f"[Scraper] extract eval error: {exc}")
+            return []
+
+        if not result.get("ok"):
+            logger.warning(
+                f"[Scraper] extract failed: {result.get('reason')}  "
+                f"rows={result.get('rowsFound', 0)}"
+            )
+            return []
+
+        logger.info(
+            f"[Scraper] rows={result['rowsFound']}  "
+            f"captured={result['captured']}  "
+            f"firstKeys={result.get('firstKeys', [])}"
+        )
+
+        items: list[dict] = []
+        for raw_entry in result.get("items", []):
+            item = self._build_item(raw_entry)
+            if not item:
+                continue
+            if item["legislation_id"] in seen_ids:
+                continue
+            if active_only and item.get("status_normalized") != "active":
+                continue
+            items.append(item)
+
+        return items
+
+    def _build_item(self, entry: dict) -> Optional[dict]:
+        """Convert a raw Angular scope field-dict into our standard item format.
+
+        Confirmed field names from the LOB API (captured via monkey-patch):
+          pmk_ID, Name, Number, Year, Status_AR, Type (int TypeID), TypeArName
+        """
+        # ── Find LegislationID ────────────────────────────────────────────
+        leg_id: Optional[str] = None
+        for field in [
+            "pmk_ID",                                        # actual LOB field name
+            "LegislationID", "LegislationId", "legislationId",
+            "legislation_id", "Id", "ID", "id",
+        ]:
+            val = entry.get(field)
+            if val is not None and str(val).strip() not in ("", "0", "None"):
+                leg_id = str(int(float(str(val))))
+                break
+
+        if not leg_id:
+            # Broadest fallback: any key with "id" in name that has a positive integer
+            for k, v in entry.items():
+                if "id" in k.lower() and isinstance(v, (int, float)) and v > 0:
+                    leg_id = str(int(v))
+                    logger.debug(f"[Scraper] Used fallback ID field: {k}={v}")
+                    break
+
+        if not leg_id:
+            logger.debug(
+                f"[Scraper] _build_item: no LegislationID found. "
+                f"Keys present: {list(entry.keys())[:20]}"
+            )
+            return None
+
+        # ── Type ──────────────────────────────────────────────────────────
+        # "Type" in the LOB API is the integer TypeID; "TypeArName" is the Arabic label.
+        raw_type_int = entry.get("Type")
+        type_id = int(
+            entry.get("LegislationTypeID") or entry.get("LegislationTypeId") or
+            entry.get("TypeID") or entry.get("TypeId") or entry.get("typeId") or
+            (raw_type_int if isinstance(raw_type_int, (int, float)) else None) or
+            _DEFAULT_TYPE_ID
+        )
+        # Arabic type label — prefer TypeArName, fall back to string fields
+        type_ar = ""
+        for tf in ("TypeArName", "LegislationType", "TypeName"):
+            val = entry.get(tf)
+            if val and isinstance(val, str):
+                type_ar = val.strip()
+                break
+        if not type_ar and not isinstance(raw_type_int, (int, float)):
+            # "Type" is a string in this entry
+            type_ar = str(raw_type_int or "").strip()
+        if not type_ar:
+            type_ar = _TYPE_ID_TO_AR.get(type_id, "")
+        type_en = _AR_TO_EN_TYPE.get(type_ar, "law")
+
+        # ── Title ─────────────────────────────────────────────────────────
+        # "Name" is the confirmed LOB field name; try LegislationName as fallback
+        title = ""
+        for tf in ("Name", "LegislationName", "LegislationTitle", "title"):
+            val = entry.get(tf)
+            if val and isinstance(val, str):
+                title = val.strip()
+                break
+
+        # ── Year ──────────────────────────────────────────────────────────
+        year_raw = (
+            entry.get("Year") or entry.get("year") or
+            entry.get("IssueYear") or entry.get("issueYear")
+        )
+        issue_year: Optional[int] = None
+        if year_raw:
+            try:
+                issue_year = int(year_raw)
+            except (ValueError, TypeError):
+                pass
+
+        # ── Doc number ───────────────────────────────────────────────────
+        num_raw = (
+            entry.get("Number") or entry.get("LegislationNumber") or
+            entry.get("LegislationNo") or entry.get("number") or ""
+        )
+        doc_number: Optional[str] = str(num_raw).strip() or None
+        if doc_number in ("0", "None", ""):
+            doc_number = None
+
+        # ── Status ───────────────────────────────────────────────────────
+        # "Status_AR" is the confirmed LOB field name
+        status_ar = ""
+        for sf in ("Status_AR", "StatusName", "Status", "status"):
+            val = entry.get(sf)
+            if val and isinstance(val, str):
+                status_ar = val.strip()
+                break
+        if status_ar.isdigit():
+            status_ar = ""
+        status_en = _AR_TO_EN_STATUS.get(status_ar, "active")
+
+        detail_url = _LOB_DETAIL_TMPL.format(leg_id=leg_id, type_id=type_id)
+
+        item: dict = {
+            "legislation_id":      leg_id,
+            "legislation_type_id": type_id,
+            "title_ar":            title,
+            "doc_type_ar":         type_ar,
+            "doc_type_en":         type_en,
+            "doc_number":          doc_number,
+            "issue_year":          issue_year,
+            "source_status_text":  status_ar,
+            "status_normalized":   status_en,
+            "detail_url":          detail_url,
+            "doc_slug":            "",
+        }
+        item["doc_slug"] = _make_slug(item)
+        return item
+
+    # ── Pagination ────────────────────────────────────────────────────────────
+
+    async def _goto_next_page(self, page) -> bool:
+        """
+        Call LegislationLaw.GetLegislationSearch(nextStart, null) on the scope
+        to load the next results page.  Falls back to clicking the Next button.
+        """
+        js = """
+        () => {
+            try {
+                var getScope = function(el) {
+                    if (window.jQuery) {
+                        try { var fn = window.jQuery(el).scope; if (fn) return fn.call(window.jQuery(el)); } catch(e) {}
+                    }
+                    return null;
+                };
+                var el = document.querySelector('tr[ng-click*="LegislationLaw"]') ||
+                         document.getElementById('Sections');
+                if (!el) return {ok: false, reason: 'no element'};
+
+                var scope = getScope(el);
+                while (scope && !scope.LegislationLaw) scope = scope.$parent;
+                if (!scope || !scope.LegislationLaw) return {ok: false, reason: 'no controller scope'};
+
+                var llaw = scope.LegislationLaw;
+                var total   = llaw.TotalCount || 0;
+                var current = llaw.PageIndex  || 1;
+                var next    = current + 10;   // 10 results per page
+
+                if (total > 0 && current + 10 > total) {
+                    return {ok: false, reason: 'last page', total: total, current: current};
+                }
+                if (typeof llaw.GetLegislationSearch !== 'function') {
+                    return {ok: false, reason: 'GetLegislationSearch not a function'};
+                }
+                llaw.GetLegislationSearch(next, null);
+                scope.$apply();
+                return {ok: true, next: next, total: total};
+            } catch(e) {
+                return {ok: false, reason: e.toString()};
+            }
+        }
+        """
+        try:
+            res = await page.evaluate(js)
+        except Exception as exc:
+            logger.debug(f"[Scraper] next_page eval failed: {exc}")
+            res = {"ok": False}
+
+        if res.get("ok"):
+            logger.info(
+                f"[Scraper] Requesting page start={res.get('next')} "
+                f"of {res.get('total')}"
+            )
+            return True
+
+        reason = res.get("reason", "")
+        logger.debug(f"[Scraper] next_page: {reason}")
+        if "last page" in reason:
+            return False
+
+        # Fallback: click Next button
+        for sel in [
+            "a[aria-label='Next']", "a[aria-label='التالي']",
+            "li.next:not(.disabled) a", "[ng-click*='nextPage']",
+        ]:
+            try:
+                btn = await page.query_selector(sel)
+                if not btn:
+                    continue
+                disabled = await btn.evaluate(
+                    "el => el.closest('li') && "
+                    "(el.closest('li').classList.contains('disabled') || "
+                    "el.hasAttribute('disabled'))"
+                )
+                if not disabled:
+                    await btn.click()
+                    return True
+            except Exception:
+                continue
+        return False
+
+    # ── Form helpers ──────────────────────────────────────────────────────────
+
+    async def _apply_filters(
+        self, page, law_type_ar: Optional[str], active_only: bool
     ) -> None:
-        """Optionally fill in the LOB search form filters."""
         if law_type_ar:
             for sel in [
-                "select[ng-model*='Type']", "select[ng-model*='type']",
-                "#LegislationTypeID", "select[name*='Type']",
+                "select[ng-model*='Type']", "#LegislationTypeID",
+                "select[ng-model*='LegislationType']",
             ]:
                 try:
                     el = await page.query_selector(sel)
                     if el:
                         await el.select_option(label=law_type_ar)
-                        logger.debug(f"[Scraper] Type filter set: {law_type_ar}")
+                        logger.debug(f"[Scraper] Type filter: {law_type_ar}")
                         break
                 except Exception:
                     continue
 
         if active_only:
-            for sel in [
-                "select[ng-model*='Status']", "select[ng-model*='status']",
-                "#LegislationStatusID", "select[name*='Status']",
-            ]:
+            for sel in ["select[ng-model*='Status']", "#LegislationStatusID"]:
                 try:
                     el = await page.query_selector(sel)
                     if el:
-                        for label in ["نافذ", "نافذة", "Active"]:
+                        for label in ["نافذ", "ساري", "Active"]:
                             try:
                                 await el.select_option(label=label)
-                                logger.debug("[Scraper] Status filter set: active")
+                                logger.debug(f"[Scraper] Status filter: {label}")
                                 break
                             except Exception:
                                 continue
@@ -324,138 +684,79 @@ class LOBListingScraper:
                 except Exception:
                     continue
 
-    async def _trigger_search(self, page) -> None:
-        """Click a search/submit button if one exists on the page."""
-        for sel in self._SEARCH_BTN_SELECTORS:
+    async def _submit_search(self, page) -> bool:
+        for sel in [
+            "button[type='submit']",
+            "button.btn-primary",
+            "[ng-click*='search']", "[ng-click*='Search']",
+        ]:
             try:
                 btn = await page.query_selector(sel)
-                if btn:
+                if btn and await btn.is_visible():
                     await btn.click()
-                    await asyncio.sleep(2)
-                    logger.debug(f"[Scraper] Clicked search button ({sel})")
-                    return
+                    logger.info(f"[Scraper] Search submitted via: {sel}")
+                    return True
             except Exception:
                 continue
 
-    async def _wait_for_results(self, page) -> None:
-        """Wait for result rows to appear after navigation/search."""
-        try:
-            await page.wait_for_selector(
-                self._RESULTS_READY_SELECTOR,
-                timeout=self.settings.PLAYWRIGHT_TIMEOUT // 2,
-                state="visible",
-            )
-        except Exception:
-            logger.warning("[Scraper] Results selector not found — scraping as-is")
-
-    async def _extract_rows(
-        self, page, seen_ids: set[str]
-    ) -> list[dict]:
-        """Extract all new legislation items from the current page view."""
-        items: list[dict] = []
-
-        # Strategy 1: structured table rows
-        for row_sel in self._ROW_SELECTORS:
-            rows = await page.query_selector_all(row_sel)
-            if not rows:
-                continue
-            for row in rows:
-                item = await self._parse_table_row(row)
-                if item and item["legislation_id"] not in seen_ids:
-                    items.append(item)
-            if items:
-                logger.debug(
-                    f"[Scraper] Selector '{row_sel}' → {len(items)} new items"
-                )
-                return items
-
-        # Strategy 2: scan all legislation detail links on the page
-        logger.debug("[Scraper] Falling back to full-page href scan")
-        links = await page.query_selector_all("a[href*='LegislationID']")
-        for link in links:
-            href  = await link.get_attribute("href") or ""
-            title = (await link.inner_text()).strip()
-            item = _item_from_href(href, title)
-            if item and item["legislation_id"] not in seen_ids:
-                items.append(item)
-
-        return items
-
-    async def _parse_table_row(self, row) -> Optional[dict]:
-        """
-        Parse one <tr> to extract metadata.
-        The LOB table columns are typically: Type | Number | Title | Year | Status
-        (exact column order can vary — we use heuristics).
-        """
-        try:
-            link = await row.query_selector("a[href*='LegislationID']")
-            if not link:
-                link = await row.query_selector("a")
-            if not link:
-                return None
-
-            href       = await link.get_attribute("href") or ""
-            title_text = (await link.inner_text()).strip()
-
-            if "LegislationID" not in href:
-                return None
-
-            item = _item_from_href(href, title_text)
-            if not item:
-                return None
-
-            # Enrich from sibling <td> cells
-            cells = await row.query_selector_all("td")
-            for cell in cells:
-                text = (await cell.inner_text()).strip()
-                if not text:
-                    continue
-                # 4-digit year
-                if re.fullmatch(r"1[89]\d\d|20[0-2]\d", text):
-                    item["issue_year"] = int(text)
-                # Known status word
-                if text in _AR_TO_EN_STATUS:
-                    item["source_status_text"] = text
-                    item["status_normalized"]  = _AR_TO_EN_STATUS[text]
-                # Known doc type
-                if text in _AR_TO_EN_TYPE and not item.get("doc_type_ar"):
-                    item["doc_type_ar"] = text
-                    item["doc_type_en"] = _AR_TO_EN_TYPE[text]
-                # Short pure-digit string = number
-                if re.fullmatch(r"\d{1,4}", text) and not item.get("doc_number"):
-                    item["doc_number"] = text
-
-            item["doc_slug"] = _make_slug(item)
-            return item
-
-        except Exception as exc:
-            logger.debug(f"[Scraper] Row parse error: {exc}")
-            return None
-
-    async def _goto_next_page(self, page) -> bool:
-        """
-        Attempt to navigate to the next result page.
-        Returns True if a next-page click was performed.
-        """
-        for sel in self._NEXT_PAGE_SELECTORS:
-            try:
-                btn = await page.query_selector(sel)
-                if not btn:
-                    continue
-                disabled = await btn.evaluate(
-                    "el => !!(el.closest('li')?.classList.contains('disabled') "
-                    "|| el.hasAttribute('disabled') "
-                    "|| el.closest('li')?.classList.contains('disable'))"
-                )
-                if disabled:
-                    return False
-                await btn.click()
-                await asyncio.sleep(2)
-                await self._wait_for_results(page)
-                return True
-            except Exception:
-                continue
+        # JS fallback
+        submitted = await page.evaluate("""
+        () => {
+            var btns = Array.from(document.querySelectorAll('button,input[type=submit]'));
+            for (var i = 0; i < btns.length; i++) {
+                var t = (btns[i].textContent || btns[i].value || '').trim();
+                if (t.includes('بحث') || t.includes('عرض') || t.toLowerCase().includes('search')) {
+                    btns[i].click(); return 'clicked:' + t;
+                }
+            }
+            return null;
+        }
+        """)
+        if submitted:
+            logger.info(f"[Scraper] Search submitted via JS: {submitted}")
+            return True
+        logger.debug("[Scraper] Search submit: no button found")
         return False
+
+    # ── Diagnostic helpers ────────────────────────────────────────────────────
+
+    async def _save_diagnostic(self, page, stage: str) -> None:
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        logs_dir = self.settings.LOGS_DIR
+        try:
+            ss = logs_dir / f"scraper_{stage}_{ts}.png"
+            await page.screenshot(path=str(ss), full_page=True)
+            logger.info(f"[Scraper] Screenshot: {ss}")
+        except Exception as exc:
+            logger.debug(f"[Scraper] Screenshot failed: {exc}")
+        try:
+            html = await page.content()
+            html_path = self.settings.DATA_DIR / "indexes" / f"lob_{stage}.html"
+            html_path.parent.mkdir(parents=True, exist_ok=True)
+            html_path.write_text(html, encoding="utf-8")
+            logger.info(f"[Scraper] HTML saved: {html_path} ({len(html):,} chars)")
+        except Exception as exc:
+            logger.debug(f"[Scraper] HTML save failed: {exc}")
+
+    async def _log_page_debug(self, page) -> None:
+        try:
+            info = await page.evaluate("""
+            () => {
+                var trs = document.querySelectorAll('tr[ng-click*="LegislationLaw"]');
+                var allLinks = document.querySelectorAll('a');
+                return {
+                    resultRows: trs.length,
+                    totalLinks: allLinks.length,
+                    jqueryLoaded: typeof window.jQuery !== 'undefined',
+                    angularLoaded: typeof window.angular !== 'undefined',
+                    bodySnippet: document.body ? document.body.innerText.slice(0, 300) : ''
+                };
+            }
+            """)
+            logger.info(f"[Scraper] Page debug: {json.dumps(info, ensure_ascii=False)}")
+        except Exception as exc:
+            logger.debug(f"[Scraper] Page debug failed: {exc}")
+
 
 
 # ── Item constructor (module-level, used by scraper) ─────────────────────────
@@ -498,6 +799,41 @@ def _item_from_href(href: str, title: str = "") -> Optional[dict]:
         "detail_url":          detail_url,
         "doc_slug":            "",         # set by caller via _make_slug()
     }
+    item["doc_slug"] = _make_slug(item)
+    return item
+
+
+def _enrich_from_text(item: dict, text: str) -> dict:
+    """
+    Try to fill in missing issue_year, source_status_text, and
+    status_normalized from free text (e.g. a surrounding table row).
+    Returns the same dict with any newly found values filled in.
+    """
+    if not item.get("issue_year"):
+        m = re.search(r"\b(19[89]\d|20[012]\d)\b", text)
+        if m:
+            item["issue_year"] = int(m.group(1))
+
+    if not item.get("source_status_text"):
+        for ar, en in _AR_TO_EN_STATUS.items():
+            if ar in text:
+                item["source_status_text"] = ar
+                item["status_normalized"]  = en
+                break
+
+    if not item.get("doc_type_ar"):
+        for ar, en in _AR_TO_EN_TYPE.items():
+            if ar in text:
+                item["doc_type_ar"] = ar
+                item["doc_type_en"] = en
+                break
+
+    if not item.get("doc_number"):
+        m = _RE_NUM.search(text)
+        if m:
+            item["doc_number"] = m.group(1)
+
+    # Rebuild slug now that we may have more data
     item["doc_slug"] = _make_slug(item)
     return item
 

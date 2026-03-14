@@ -1,0 +1,1093 @@
+<!DOCTYPE html><html dir="rtl" lang="ar" ng-app="App" class=" ng-scope js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers no-applicationcache svg inlinesvg smil svgclippaths" ng-controller="SystemLayout" ng-init="GetLanguage(LangID == 2? 'ar' : 'en') ;"><head><style type="text/css">.swal-icon--error{border-color:#f27474;-webkit-animation:animateErrorIcon .5s;animation:animateErrorIcon .5s}.swal-icon--error__x-mark{position:relative;display:block;-webkit-animation:animateXMark .5s;animation:animateXMark .5s}.swal-icon--error__line{position:absolute;height:5px;width:47px;background-color:#f27474;display:block;top:37px;border-radius:2px}.swal-icon--error__line--left{-webkit-transform:rotate(45deg);transform:rotate(45deg);left:17px}.swal-icon--error__line--right{-webkit-transform:rotate(-45deg);transform:rotate(-45deg);right:16px}@-webkit-keyframes animateErrorIcon{0%{-webkit-transform:rotateX(100deg);transform:rotateX(100deg);opacity:0}to{-webkit-transform:rotateX(0deg);transform:rotateX(0deg);opacity:1}}@keyframes animateErrorIcon{0%{-webkit-transform:rotateX(100deg);transform:rotateX(100deg);opacity:0}to{-webkit-transform:rotateX(0deg);transform:rotateX(0deg);opacity:1}}@-webkit-keyframes animateXMark{0%{-webkit-transform:scale(.4);transform:scale(.4);margin-top:26px;opacity:0}50%{-webkit-transform:scale(.4);transform:scale(.4);margin-top:26px;opacity:0}80%{-webkit-transform:scale(1.15);transform:scale(1.15);margin-top:-6px}to{-webkit-transform:scale(1);transform:scale(1);margin-top:0;opacity:1}}@keyframes animateXMark{0%{-webkit-transform:scale(.4);transform:scale(.4);margin-top:26px;opacity:0}50%{-webkit-transform:scale(.4);transform:scale(.4);margin-top:26px;opacity:0}80%{-webkit-transform:scale(1.15);transform:scale(1.15);margin-top:-6px}to{-webkit-transform:scale(1);transform:scale(1);margin-top:0;opacity:1}}.swal-icon--warning{border-color:#f8bb86;-webkit-animation:pulseWarning .75s infinite alternate;animation:pulseWarning .75s infinite alternate}.swal-icon--warning__body{width:5px;height:47px;top:10px;border-radius:2px;margin-left:-2px}.swal-icon--warning__body,.swal-icon--warning__dot{position:absolute;left:50%;background-color:#f8bb86}.swal-icon--warning__dot{width:7px;height:7px;border-radius:50%;margin-left:-4px;bottom:-11px}@-webkit-keyframes pulseWarning{0%{border-color:#f8d486}to{border-color:#f8bb86}}@keyframes pulseWarning{0%{border-color:#f8d486}to{border-color:#f8bb86}}.swal-icon--success{border-color:#a5dc86}.swal-icon--success:after,.swal-icon--success:before{content:"";border-radius:50%;position:absolute;width:60px;height:120px;background:#fff;-webkit-transform:rotate(45deg);transform:rotate(45deg)}.swal-icon--success:before{border-radius:120px 0 0 120px;top:-7px;left:-33px;-webkit-transform:rotate(-45deg);transform:rotate(-45deg);-webkit-transform-origin:60px 60px;transform-origin:60px 60px}.swal-icon--success:after{border-radius:0 120px 120px 0;top:-11px;left:30px;-webkit-transform:rotate(-45deg);transform:rotate(-45deg);-webkit-transform-origin:0 60px;transform-origin:0 60px;-webkit-animation:rotatePlaceholder 4.25s ease-in;animation:rotatePlaceholder 4.25s ease-in}.swal-icon--success__ring{width:80px;height:80px;border:4px solid hsla(98,55%,69%,.2);border-radius:50%;box-sizing:content-box;position:absolute;left:-4px;top:-4px;z-index:2}.swal-icon--success__hide-corners{width:5px;height:90px;background-color:#fff;padding:1px;position:absolute;left:28px;top:8px;z-index:1;-webkit-transform:rotate(-45deg);transform:rotate(-45deg)}.swal-icon--success__line{height:5px;background-color:#a5dc86;display:block;border-radius:2px;position:absolute;z-index:2}.swal-icon--success__line--tip{width:25px;left:14px;top:46px;-webkit-transform:rotate(45deg);transform:rotate(45deg);-webkit-animation:animateSuccessTip .75s;animation:animateSuccessTip .75s}.swal-icon--success__line--long{width:47px;right:8px;top:38px;-webkit-transform:rotate(-45deg);transform:rotate(-45deg);-webkit-animation:animateSuccessLong .75s;animation:animateSuccessLong .75s}@-webkit-keyframes rotatePlaceholder{0%{-webkit-transform:rotate(-45deg);transform:rotate(-45deg)}5%{-webkit-transform:rotate(-45deg);transform:rotate(-45deg)}12%{-webkit-transform:rotate(-405deg);transform:rotate(-405deg)}to{-webkit-transform:rotate(-405deg);transform:rotate(-405deg)}}@keyframes rotatePlaceholder{0%{-webkit-transform:rotate(-45deg);transform:rotate(-45deg)}5%{-webkit-transform:rotate(-45deg);transform:rotate(-45deg)}12%{-webkit-transform:rotate(-405deg);transform:rotate(-405deg)}to{-webkit-transform:rotate(-405deg);transform:rotate(-405deg)}}@-webkit-keyframes animateSuccessTip{0%{width:0;left:1px;top:19px}54%{width:0;left:1px;top:19px}70%{width:50px;left:-8px;top:37px}84%{width:17px;left:21px;top:48px}to{width:25px;left:14px;top:45px}}@keyframes animateSuccessTip{0%{width:0;left:1px;top:19px}54%{width:0;left:1px;top:19px}70%{width:50px;left:-8px;top:37px}84%{width:17px;left:21px;top:48px}to{width:25px;left:14px;top:45px}}@-webkit-keyframes animateSuccessLong{0%{width:0;right:46px;top:54px}65%{width:0;right:46px;top:54px}84%{width:55px;right:0;top:35px}to{width:47px;right:8px;top:38px}}@keyframes animateSuccessLong{0%{width:0;right:46px;top:54px}65%{width:0;right:46px;top:54px}84%{width:55px;right:0;top:35px}to{width:47px;right:8px;top:38px}}.swal-icon--info{border-color:#c9dae1}.swal-icon--info:before{width:5px;height:29px;bottom:17px;border-radius:2px;margin-left:-2px}.swal-icon--info:after,.swal-icon--info:before{content:"";position:absolute;left:50%;background-color:#c9dae1}.swal-icon--info:after{width:7px;height:7px;border-radius:50%;margin-left:-3px;top:19px}.swal-icon{width:80px;height:80px;border-width:4px;border-style:solid;border-radius:50%;padding:0;position:relative;box-sizing:content-box;margin:20px auto}.swal-icon:first-child{margin-top:32px}.swal-icon--custom{width:auto;height:auto;max-width:100%;border:none;border-radius:0}.swal-icon img{max-width:100%;max-height:100%}.swal-title{color:rgba(0,0,0,.65);font-weight:600;text-transform:none;position:relative;display:block;padding:13px 16px;font-size:27px;line-height:normal;text-align:center;margin-bottom:0}.swal-title:first-child{margin-top:26px}.swal-title:not(:first-child){padding-bottom:0}.swal-title:not(:last-child){margin-bottom:13px}.swal-text{font-size:16px;position:relative;float:none;line-height:normal;vertical-align:top;text-align:left;display:inline-block;margin:0;padding:0 10px;font-weight:400;color:rgba(0,0,0,.64);max-width:calc(100% - 20px);overflow-wrap:break-word;box-sizing:border-box}.swal-text:first-child{margin-top:45px}.swal-text:last-child{margin-bottom:45px}.swal-footer{text-align:right;padding-top:13px;margin-top:13px;padding:13px 16px;border-radius:inherit;border-top-left-radius:0;border-top-right-radius:0}.swal-button-container{margin:5px;display:inline-block;position:relative}.swal-button{background-color:#7cd1f9;color:#fff;border:none;box-shadow:none;border-radius:5px;font-weight:600;font-size:14px;padding:10px 24px;margin:0;cursor:pointer}.swal-button[not:disabled]:hover{background-color:#78cbf2}.swal-button:active{background-color:#70bce0}.swal-button:focus{outline:none;box-shadow:0 0 0 1px #fff,0 0 0 3px rgba(43,114,165,.29)}.swal-button[disabled]{opacity:.5;cursor:default}.swal-button::-moz-focus-inner{border:0}.swal-button--cancel{color:#555;background-color:#efefef}.swal-button--cancel[not:disabled]:hover{background-color:#e8e8e8}.swal-button--cancel:active{background-color:#d7d7d7}.swal-button--cancel:focus{box-shadow:0 0 0 1px #fff,0 0 0 3px rgba(116,136,150,.29)}.swal-button--danger{background-color:#e64942}.swal-button--danger[not:disabled]:hover{background-color:#df4740}.swal-button--danger:active{background-color:#cf423b}.swal-button--danger:focus{box-shadow:0 0 0 1px #fff,0 0 0 3px rgba(165,43,43,.29)}.swal-content{padding:0 20px;margin-top:20px;font-size:medium}.swal-content:last-child{margin-bottom:20px}.swal-content__input,.swal-content__textarea{-webkit-appearance:none;background-color:#fff;border:none;font-size:14px;display:block;box-sizing:border-box;width:100%;border:1px solid rgba(0,0,0,.14);padding:10px 13px;border-radius:2px;transition:border-color .2s}.swal-content__input:focus,.swal-content__textarea:focus{outline:none;border-color:#6db8ff}.swal-content__textarea{resize:vertical}.swal-button--loading{color:transparent}.swal-button--loading~.swal-button__loader{opacity:1}.swal-button__loader{position:absolute;height:auto;width:43px;z-index:2;left:50%;top:50%;-webkit-transform:translateX(-50%) translateY(-50%);transform:translateX(-50%) translateY(-50%);text-align:center;pointer-events:none;opacity:0}.swal-button__loader div{display:inline-block;float:none;vertical-align:baseline;width:9px;height:9px;padding:0;border:none;margin:2px;opacity:.4;border-radius:7px;background-color:hsla(0,0%,100%,.9);transition:background .2s;-webkit-animation:swal-loading-anim 1s infinite;animation:swal-loading-anim 1s infinite}.swal-button__loader div:nth-child(3n+2){-webkit-animation-delay:.15s;animation-delay:.15s}.swal-button__loader div:nth-child(3n+3){-webkit-animation-delay:.3s;animation-delay:.3s}@-webkit-keyframes swal-loading-anim{0%{opacity:.4}20%{opacity:.4}50%{opacity:1}to{opacity:.4}}@keyframes swal-loading-anim{0%{opacity:.4}20%{opacity:.4}50%{opacity:1}to{opacity:.4}}.swal-overlay{position:fixed;top:0;bottom:0;left:0;right:0;text-align:center;font-size:0;overflow-y:auto;background-color:rgba(0,0,0,.4);z-index:10000;pointer-events:none;opacity:0;transition:opacity .3s}.swal-overlay:before{content:" ";display:inline-block;vertical-align:middle;height:100%}.swal-overlay--show-modal{opacity:1;pointer-events:auto}.swal-overlay--show-modal .swal-modal{opacity:1;pointer-events:auto;box-sizing:border-box;-webkit-animation:showSweetAlert .3s;animation:showSweetAlert .3s;will-change:transform}.swal-modal{width:478px;opacity:0;pointer-events:none;background-color:#fff;text-align:center;border-radius:5px;position:static;margin:20px auto;display:inline-block;vertical-align:middle;-webkit-transform:scale(1);transform:scale(1);-webkit-transform-origin:50% 50%;transform-origin:50% 50%;z-index:10001;transition:opacity .2s,-webkit-transform .3s;transition:transform .3s,opacity .2s;transition:transform .3s,opacity .2s,-webkit-transform .3s}@media (max-width:500px){.swal-modal{width:calc(100% - 20px)}}@-webkit-keyframes showSweetAlert{0%{-webkit-transform:scale(1);transform:scale(1)}1%{-webkit-transform:scale(.5);transform:scale(.5)}45%{-webkit-transform:scale(1.05);transform:scale(1.05)}80%{-webkit-transform:scale(.95);transform:scale(.95)}to{-webkit-transform:scale(1);transform:scale(1)}}@keyframes showSweetAlert{0%{-webkit-transform:scale(1);transform:scale(1)}1%{-webkit-transform:scale(.5);transform:scale(.5)}45%{-webkit-transform:scale(1.05);transform:scale(1.05)}80%{-webkit-transform:scale(.95);transform:scale(.95)}to{-webkit-transform:scale(1);transform:scale(1)}}</style><style>@charset "UTF-8";[ng\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>
+
+    <!-- Meta Tags -->
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="ديوان التشريع والرأي">
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7; IE=EmulateIE9, IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="author" content="">
+    <meta name="description" content="ديوان التشريع والرأي">
+    <meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="LOB">
+    <meta property="og:description" content="LOB">
+    <meta property="og:url" content="index.html">
+    <meta property="og:site_name" content="LOB">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:description" content="LOB">
+    <meta name="twitter:title" content="LOB">
+
+    <link rel="canonical" href="index.html">
+    <link rel="next" href="page/2/index.html">
+    <link rel="alternate" type="application/rss+xml" title="ديوان التشريع والرأي" href="rss.xml">
+
+    <meta charset="utf-8">
+    <!-- ============================================ -->
+    <!-- Page Title -->
+    <title>ديوان التشريع والرأي</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+
+    <!-- Stylesheet -->
+    <link href="plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <link href="plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+    <link href="CSS/animate.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+    <!-- ngIf: LangID==1 -->
+    <!-- ngIf: LangID==2 --><link href="CSS/css-plugin-collectionsAR.css?v=5.24.7.1.3" rel="stylesheet" ng-if="LangID==2" class="ng-scope"><!-- end ngIf: LangID==2 -->
+    <!-- CSS | menuzord megamenu skins -->
+    <link id="menuzord-menu-skins" href="CSS/menuzord-skins/menuzord-boxed.css?v=5.24.7.1.3" rel="stylesheet">
+    <!-- CSS | Main style file -->
+    <!-- ngIf: LangID==1 -->
+    <!-- ngIf: LangID==2 --><link href="CSS/style-main-rtl.css?v=5.24.7.1.3" rel="stylesheet" type="text/css" ng-if="LangID==2" class="ng-scope"><!-- end ngIf: LangID==2 -->
+    <!-- CSS | Preloader Styles -->
+    <link href="CSS/preloader.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+    <!-- CSS | Custom Margin Padding Collection -->
+    <link href="CSS/custom-bootstrap-margin-padding.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+    <!-- CSS | Responsive media queries -->
+    <link href="CSS/responsive.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+    <!-- CSS | Style css. This is the file where you can place your own custom css code. Just uncomment it and use it. -->
+    <!-- <link href="css/style.css" rel="stylesheet" type="text/css"> -->
+    <!-- Revolution Slider 5.x CSS settings -->
+    <link href="javascript/ThemeJS/revolution-slider/css/settings.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+    <link href="javascript/ThemeJS/revolution-slider/css/layers.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+    <link href="javascript/ThemeJS/revolution-slider/css/navigation.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+
+    <!-- CSS | Theme Color -->
+    <link href="CSS/colors/theme-skin-sky-Gold.css?v=5.24.7.1.3" rel="stylesheet" type="text/css">
+    <link href="CSS/menuzord-skins/menuzord-colored.css?v=5.24.7.1.3" rel="stylesheet">
+    <link href="CSS/menuzord-skins/menuzord-dark.css?v=5.24.7.1.3" rel="stylesheet">
+
+    <link href="CSS/sweet-alert.css?v=5.24.7.1.3" rel="stylesheet">
+
+    <!----------DWT-------------->
+    <!-----------//DWT------------->
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- ngIf: LangID==1 -->
+    <!-- ngIf: LangID==2 --><link href="CSS/DWTStyle-rtl.css?v=5.24.7.1.3" rel="stylesheet" ng-if="LangID==2" class="ng-scope"><!-- end ngIf: LangID==2 -->
+
+    <!-- font -->
+    <link rel="stylesheet" media="screen" href="CSS/Font.css?v=5.24.7.1.3" type="text/css">
+
+
+    <link href="CSS/DWTStyle.css?v=5.24.7.1.3" rel="stylesheet">
+
+
+    <style>
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+            display: none !important;
+        }
+    </style>
+</head>
+<body oncopy="return false" oncut="return false" onselectstart="return false" class="has-side-panel side-panel-left fullwidth-page side-push-panel  bg-gray-light p-sm-0" data-rsssl="1">
+    <!-- ///// NAVIGATION BAR /////-->
+    <div id="StaticCtrlJS"></div>
+    <div id="CtrlJS"></div>
+    <!-- ///// NAVIGATION BAR /////-->
+
+    <div class="body-overlay"></div>
+    <div id="side-panel" class="dark resizable">
+        <!-- ngInclude: 'View/General/sidePanel.html' --><div ng-include="'View/General/sidePanel.html'" class="ng-scope"><div class="side-panel-wrap ng-scope">
+    <div id="side-panel-trigger-close" class="side-panel-trigger"><a href="" class="icon_close"><i class="fa fa-close font-30"></i></a></div>
+    <a href="javascript:void(0)"><img alt="logo" src="images/dywn-logo.png"></a>
+    <div class="side-panel-nav mt-30">
+        <div class="widget no-border">
+            <nav>
+                <ul class="nav nav-list">
+                    <!-- ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Home" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الصفحة الرئيسية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!About-us" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">ديوان التشريع والرأي</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Jordanian-Legislation" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">التشريعات الأردنية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Draft-laws-and-regulations" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">مسودات مشروعات القوانين والأنظمة</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Judicial-Decisions-And-Explanation" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الأحكام القضائية و القرارات التفسيرية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Legal-Opinions" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الآراء القانونية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Studies-And-Researches" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الدراسات والأبحاث</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 --><a ng-href="https://webmail.gov.jo/owa/auth/logon.aspx?replaceCurrent=1&amp;url=https%3a%2f%2fwebmail.gov.jo%2fowa%2f" target="_blank" ng-if="Menu.Type == 7" class="ng-scope" href="https://webmail.gov.jo/owa/auth/logon.aspx?replaceCurrent=1&amp;url=https%3a%2f%2fwebmail.gov.jo%2fowa%2f">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">بريد الموظفين</span><!-- end ngIf: LangID==2 -->
+
+
+                        </a><!-- end ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Defense-orders" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">أوامر الدفاع و البلاغات</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Right-To-Get-Information" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">حق الحصول على معلومة</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Sorting-results" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">نتائج الفرز</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 --><a ng-href="https://fb.watch/n93nBMcNqX/" target="_blank" ng-if="Menu.Type == 7" class="ng-scope" href="https://fb.watch/n93nBMcNqX/">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">المساعدة</span><!-- end ngIf: LangID==2 -->
+
+
+                        </a><!-- end ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' -->
+                    <li>
+                        <a href="?v=0&amp;lang=ar#!SiteMap">
+                            <span class="ng-binding">خريطة الموقع</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="side-panel-widget mt-30">
+        <div class="widget no-border">
+            <ul>
+                <li class="font-14 mb-5" style="direction:ltr;">
+                    <span class="pull-right" style="padding-left:7px">
+                    <i class="fa fa-phone text-theme-colored"></i></span>                    
+                    <a href="tel:(962) 6 5622266" class="text-gray ng-binding">(962) 6 5622266</a>
+                </li>
+                <li class="font-14 mb-5" style="direction:ltr;">
+                    <span class="pull-right" style="padding-left:7px">
+                    <i class="fa fa-fax text-theme-colored"></i></span>                    
+                    <a href="tel:(962) 6 5622201" class="text-gray ng-binding">(962) 6 5622201</a>
+                </li>
+                <li class="font-14 mb-5" style="direction:ltr;">
+                    <span class="pull-right" style="padding-left:7px">
+                    <i class="fa fa-envelope-open text-theme-colored"></i></span>                    
+                    <a href="mailto:dewanlob@lob.gov.jo" class="text-gray ng-binding">dewanlob@lob.gov.jo</a>
+                </li>
+            </ul>
+        </div>
+        <div class="widget">
+            <ul class="styled-icons icon-dark icon-theme-colored icon-sm">
+                <li><a target="_blank" href="https://www.facebook.com/%D8%AF%D9%8A%D9%88%D8%A7%D9%86-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9-%D9%88%D8%A7%D9%84%D8%B1%D8%A3%D9%8A-%D8%A7%D9%84%D8%A3%D8%B1%D8%AF%D9%86-102524525247233"><i class="fab fa-facebook"></i></a></li>
+                <li><a target="_blank"><i class="fab fa-twitter"></i></a></li>
+                <li><a target="_blank"><i class="fab fa-instagram"></i></a></li>
+                <li><a target="_blank"><i class="fab fa-google-plus"></i></a></li>
+                <li><a target="_blank"><i class="fab fa-linkedin"></i></a></li>
+            </ul>
+        </div>
+
+    </div>
+</div></div>
+    </div>
+    <div id="wrapper" class="clearfix">
+        <!-- preloader -->
+        <div id="preloader">
+            <div id="spinner">
+                <!--<div class="preloader-dot-loading">
+                    <div class="cssload-loading"><i></i><i></i><i></i><i></i></div>
+                </div>-->
+                <i class="mcs-icon-hummer hummer"></i>
+                <i class="mcs-icon-plate plate"></i>
+                <div class="cssload-container">
+                    <div class="cssload-shaft1"></div>
+                    <div class="cssload-shaft2"></div>
+                    <div class="cssload-shaft3"></div>
+                    <div class="cssload-shaft4"></div>
+                    <div class="cssload-shaft5"></div>
+                    <div class="cssload-shaft6"></div>
+                    <div class="cssload-shaft7"></div>
+                    <div class="cssload-shaft8"></div>
+                    <div class="cssload-shaft9"></div>
+                    <div class="cssload-shaft10"></div>
+                    <div class="cssload-shaft11"></div>
+                    <div class="cssload-shaft12"></div>
+                    <div class="cssload-shaft13"></div>
+                    <div class="cssload-shaft14"></div>
+                    <div class="cssload-shaft15"></div>
+                    <div class="cssload-shaft16"></div>
+                    <div class="cssload-shaft17"></div>
+                    <div class="cssload-shaft18"></div>
+                    <div class="cssload-shaft19"></div>
+                    <div class="cssload-shaft20"></div>
+
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Header -->
+        <!-- ngInclude: 'View/General/Header.html' --><div ng-include="'View/General/Header.html'" class="ng-scope">
+
+
+<header class="header ng-scope">
+
+
+    <div class="top_header fixed-header" id="fixed-header">
+
+        <div class="row">
+            <div class="top_menu col-md-2 col-sm-12 col-xs-12">
+                <div class="region region-top-menu">
+                    <div id="block-menu-menu-top-menu" class="block block-menu">
+
+
+                        <div class="content">
+                            <ul class="menu">
+                                <li class="first leaf">
+                                    <div id="side-panel-trigger" class="side-panel-trigger"><a href=""><i class="fa fa-bars font-24"></i></a></div>
+
+
+                                </li>
+                                <li class="last leaf">
+                                    <a href="?v=0&amp;lang=ar#!Home">
+                                        <img src="images/TopHeader/home_icon.png" class="img-responsive" style=" width: 37px;">
+                                    </a>
+                                </li>
+
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-sm-12 col-xs-12" style=" float: none; margin: auto; text-align: center; display: inline-block;">
+                <img src="images/headerLogo.jpg" class="img-responsive pull-left" style="max-width: 84px; margin: auto; text-align: center; display: inline-block; ">
+            </div>
+
+            <div class=" col-md-4 col-sm-12 col-xs-12">
+                <div class="language">
+                    <div class="region region-language">
+                        <div id="block-locale-language" class="block block-locale">
+                            <div class="content">
+                                <ul class="language-switcher-locale-url" style="display:flex;direction:rtl">
+
+                                    <li class="active">
+                                        <a href="?v=0&amp;lang=ar#!UsefulLinks" class="ng-binding">
+                                            روابط ذات صلة
+                                        </a>
+                                    </li>
+                                    <li class=" first active">
+                                        <a href="?v=0&amp;lang=ar#!JobApplication" class="ng-binding">
+                                            الوظائف
+                                        </a>
+                                    </li>
+
+
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tools">
+                    <h1>إمكانية وصول الأشخاص ذوي الإعاقة</h1>
+                    <div class="skip0" ng-click="ScrolltoContent()">
+                        <a href="">
+                            <img alt="تجاوز إلى المحتوى الرئيسي" title="تجاوز إلى المحتوى الرئيسي" src="images/TopHeader/arrd.png">
+                        </a>
+                    </div>
+                    <div class="skip1">
+                        <a href="#header-nav">
+                            <img alt="تجاوز إلى القائمة الرئيسية" title="تجاوز إلى القائمة الرئيسية" src="images/TopHeader/s2.png">
+                        </a>
+                    </div>
+
+                    <div class="resize">
+                        <div class="region region-text-resize">
+                            <div id="block-text-resize-0" class="block block-text-resize">
+                                <div class="content">
+                                    <!-- ngIf: LangID==1 -->
+                                    <!-- ngIf: LangID==2 --><a href="" class="changer language-link active ng-scope" id="text_resize_increase" title="English" alt="English" ng-if="LangID==2" ng-click="ChangeLanguage(1)">
+                                        <div style="font-weight: bolder;color: #406ba2;font-size: 21px;bottom: 7px; position: relative;">E</div>
+                                    </a><!-- end ngIf: LangID==2 -->
+                                    <a href="" class="changer" id="text_resize_decrease" alt="تصغير الخط" title="تصغير الخط">
+                                        <img alt="تصغير الخط" src="images/TopHeader/dec.png">
+                                    </a>
+                                    <a href="" class="changer" id="text_resize_reset" alt="استرجاع الخط الطبيعي" title="استرجاع الخط الطبيعي ">
+                                        <img alt="استرجاع الخط الطبيعي" src="images/TopHeader/reset.png">
+                                    </a>
+                                    <a href="" class="changer" id="text_resize_increase" title="تكبير الخط " alt="تكبير الخط">
+                                        <img alt="تكبير الخط" src="images/TopHeader/inc.png">
+                                    </a>
+
+                                    <div id="text_resize_clear"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-12 col-sm-12 col-xs-12" style=" margin-top: 10px;">
+                    <a class="button VideoBtn  pull-left" data-toggle="modal" data-target="#ExplanatoryVideoModal" style="cursor:pointer">شاهد الفيديو الايضاحي</a>
+                </div>
+            </div>
+            
+        </div>
+
+
+
+
+    </div>
+
+
+    <div class="header-nav container-fluid header-nav-wrapper Gold" id="header-nav">
+        <div class="row">
+            <nav id="menuzord-left" class="menuzord menuzord-responsive blue" dir="rtl"><a href="javascript:void(0)" class="showhide"><em></em><em></em><em></em></a>
+
+
+                <a class="menuzord-brand pull-right" href="?v=0&amp;lang=ar#!Home">
+                    <img src="images/dywn-logo.png" alt="">
+                </a>
+
+                <ul class="menuzord-menu menuzord-left menuzord-indented scrollable" style="max-height: 400px;">
+                    <!-- ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Home" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الصفحة الرئيسية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!About-us" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">ديوان التشريع والرأي</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        <span class="indicator"><i class="fa fa-angle-down"></i></span></a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first --><!-- ngInclude: 'MenuRecursive.html' --><ul class="dropdown ng-scope" ng-if="(Menu.SubMenu.length&gt;0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length&gt;0) &amp;&amp; !$first" ng-include="'MenuRecursive.html'" style="right: auto;">
+    <!-- ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!President" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الرئيس</span><!-- end ngIf: LangID==2 -->
+        <span class="indicator"><i class="fa fa-angle-right"></i></span></a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) --><!-- ngInclude: 'MenuRecursive.html' --><ul class="dropdown ng-scope" ng-if="(Menu.SubMenu.length&gt;0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length&gt;0)" ng-include="'MenuRecursive.html'">
+    <!-- ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' -->
+
+
+    <!-- ngRepeat: Section in Menu.Page.Sections| orderBy:'SectionOrder' --><li ng-repeat="Section in Menu.Page.Sections| orderBy:'SectionOrder'" class="ng-scope">
+        <!-- ngIf: Section.ShowInMenu --><a href="?v=0&amp;lang=ar#!President/الرئيس" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle+'/'+Section.MenuUrlTitle)" ng-if="Section.ShowInMenu" class="ng-binding ng-scope">
+            
+        </a><!-- end ngIf: Section.ShowInMenu -->
+
+    </li><!-- end ngRepeat: Section in Menu.Page.Sections| orderBy:'SectionOrder' -->
+</ul><!-- end ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Secretary-General" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">أمين عام ديوان التشريع والرأي</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Consultnets" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">المستشارون</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Message-Vision" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الرؤيا و الرسالة والقيم الجوهرية</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!About-the-Legislation-and-Opinion-Bureau" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">نبذه عن ديوان التشريع</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Organizational-Chart" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الهيكل التنظيمي</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) --><a href="" ng-if="!(Menu.Dynamicpage) &amp;&amp; !(Menu.StaticPage)" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">مذكرة البيانات التشريعية</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Legal" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">السند القانوني</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!strategic-plan" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الخطة الاستراتيجية</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Ministerial-Committee" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">اللجنة الوزارية</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' --><li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'" class="ng-scope">
+
+        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Statement-note-requesting-legal-opinion" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" class="ng-scope">
+            <!-- ngIf: LangID==1 -->
+            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">مذكرة بيانات طلب رأي قانوني</span><!-- end ngIf: LangID==2 -->
+        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+
+
+        <!-- ngIf: !(Menu.Dynamicpage) && !(Menu.StaticPage) -->
+
+        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) -->
+
+    </li><!-- end ngRepeat: Menu in Menu.SubMenu| orderBy:'MenuOrder' -->
+
+
+    <!-- ngRepeat: Section in Menu.Page.Sections| orderBy:'SectionOrder' -->
+</ul><!-- end ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Jordanian-Legislation" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">التشريعات الأردنية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Draft-laws-and-regulations" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">مسودات مشروعات القوانين والأنظمة</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Judicial-Decisions-And-Explanation" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الأحكام القضائية و القرارات التفسيرية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Legal-Opinions" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الآراء القانونية</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Studies-And-Researches" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">الدراسات والأبحاث</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 --><a ng-href="https://webmail.gov.jo/owa/auth/logon.aspx?replaceCurrent=1&amp;url=https%3a%2f%2fwebmail.gov.jo%2fowa%2f" target="_blank" ng-if="Menu.Type == 7" class="ng-scope" href="https://webmail.gov.jo/owa/auth/logon.aspx?replaceCurrent=1&amp;url=https%3a%2f%2fwebmail.gov.jo%2fowa%2f">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">بريد الموظفين</span><!-- end ngIf: LangID==2 -->
+
+
+                        </a><!-- end ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Defense-orders" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">أوامر الدفاع و البلاغات</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Right-To-Get-Information" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">حق الحصول على معلومة</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage --><a href="?v=0&amp;lang=ar#!Sorting-results" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" class="ng-scope">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">نتائج الفرز</span><!-- end ngIf: LangID==2 -->
+
+
+
+                        </a><!-- end ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' --><li ng-repeat="Menu in MenuData | orderBy:'MenuOrder'" ng-class="{'active':CurrentMenu.pmk_ID==Menu.pmk_ID}" on-last-repeat="MenuLastRepeat" class="ng-scope">
+                        <!-- ngIf: !!Menu.Dynamicpage || !!Menu.StaticPage -->
+
+                        <!-- ngIf: !(Menu.StaticPage) &&  !(Menu.Dynamicpage) && (Menu.Type != 53) && (Menu.Type != 7) -->
+                        <!-- ngIf: Menu.Type == 7 --><a ng-href="https://fb.watch/n93nBMcNqX/" target="_blank" ng-if="Menu.Type == 7" class="ng-scope" href="https://fb.watch/n93nBMcNqX/">
+                            <!-- ngIf: LangID==1 -->
+                            <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">المساعدة</span><!-- end ngIf: LangID==2 -->
+
+
+                        </a><!-- end ngIf: Menu.Type == 7 -->
+                        <!-- ngIf: (Menu.Type == 53) -->
+
+
+                        <!-- ngIf: (Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0) && !$first -->
+
+                    </li><!-- end ngRepeat: Menu in MenuData | orderBy:'MenuOrder' -->
+
+
+                <li class="scrollable-fix"></li></ul>
+            </nav>
+        </div>
+
+
+    </div>
+</header>
+
+<script type="text/ng-template" id="MenuRecursive.html" class="ng-scope">
+    <li ng-repeat="Menu in Menu.SubMenu| orderBy:'MenuOrder'">
+
+        <a href="?v={{Version}}&lang={{CurrentLang}}#!{{Menu.MenuUrlTitle}}" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle)" ng-if="!!Menu.Dynamicpage || !!Menu.StaticPage">
+            <span ng-if="LangID==1">{{Menu.Title}}</span>
+            <span ng-if="LangID==2">{{Menu.TitleAr}}</span>
+        </a>
+
+
+
+        <a href="" ng-if="!(Menu.Dynamicpage) && !(Menu.StaticPage)">
+            <span ng-if="LangID==1">{{Menu.Title}}</span>
+            <span ng-if="LangID==2">{{Menu.TitleAr}}</span>
+        </a>
+
+        <ul class="dropdown" ng-if="(Menu.SubMenu.length>0 ||(Menu.Page.Sections|filter:{ShowInMenu:true}:true).length>0)" ng-include="'MenuRecursive.html'"></ul>
+
+    </li>
+
+
+    <li ng-repeat="Section in Menu.Page.Sections| orderBy:'SectionOrder'">
+        <a href="?v={{Version}}&lang={{CurrentLang}}#!{{Menu.MenuUrlTitle}}/{{Section.MenuUrlTitle}}" ng-click="GoToLocation(Menu,Menu.MenuUrlTitle+'/'+Section.MenuUrlTitle)" ng-if="Section.ShowInMenu">
+            {{Section.MenuTitle}}
+        </a>
+
+    </li>
+</script>
+
+
+<div class="modal ng-scope" id="ExplanatoryVideoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" dir="rtl">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h5 class="modal-title col-md-8 col-sm-8  col-xs-8 pull-right">شاهد الفيديو الايضاحي</h5>
+                <button type="button" class="close  col-md-4 col-sm-4  col-xs-4 pull-left text-left" data-dismiss="modal" aria-label="Close" ng-class="{'closeEn':LangID==1}">
+                    <span aria-hidden="true"><i class="fa fa-times-circle"></i></span>
+                </button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div class="ViewContainer"></div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary ng-binding" data-dismiss="modal">إغلاق</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</div>
+        <!-- //Header -->
+        <!-- Sections -->
+        <div class="main-content resizable" id="Sections">
+
+
+
+            <!-- ngInclude: PageContent -->
+            <!--<div ng-include="'View/Sections/HtmlPage.html'"></div>-->
+        </div>
+
+        <!-- //Sections -->
+        <!-- Footer -->
+        <!-- Footer Section -->
+        <!-- ngInclude: 'View/General/Footer.html'  --><div ng-include="'View/General/Footer.html' " class="resizable ng-scope" style="display:none" id="FooterSection"><footer id="footer" class="footer pb-0 ng-scope" data-bg-img="images/footer-bg.png" data-bg-color="#25272e" dir="rtl">
+    <div class="container pb-20">
+        <div class="row multi-row-clearfix">
+            <div class="col-sm-6 col-md-4 pull-right">
+                <div class="widget dark">
+                    <img alt="" src="images/dywn-logo.png" ng-click="DirectToHomePage()" style="cursor:pointer">
+                    <p class="font-12 mt-10 mb-10">
+                        <!-- ngIf: LangID==1 -->
+                        <!-- ngIf: LangID==2 --><span ng-if="LangID==2" class="ng-binding ng-scope">في سياق سعي ديوان التشريع والرأي الدؤوب لتطوير أدائه وتحديث أدواته ولإنفاذ التشريعات القانونية ، والوصول الى تشريعات كفؤة تقوم على أساسات ثابتة من الوضوح والشفافية،فإن الديوان يعلن لشرائح المجتمع ومؤسساته وأفراده كافة عن إطلاق موقعه الالكتروني الجديد.</span><!-- end ngIf: LangID==2 -->
+
+                    </p>
+            
+                    <ul class="styled-icons icon-sm icon-bordered icon-circled clearfix mt-20">
+                        <li><a target="_blank" href="https://www.facebook.com/%D8%AF%D9%8A%D9%88%D8%A7%D9%86-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9-%D9%88%D8%A7%D9%84%D8%B1%D8%A3%D9%8A-%D8%A7%D9%84%D8%A3%D8%B1%D8%AF%D9%86-102524525247233"><i class="fab fa-facebook"></i></a></li>
+                        <li><a target="_blank"><i class="fab fa-twitter"></i></a></li>
+                        <li><a target="_blank"><i class="fab fa-instagram"></i></a></li>
+                        <li><a target="_blank"><i class="fab fa-google-plus"></i></a></li>
+                        <li><a target="_blank"><i class="fab fa-linkedin"></i></a></li>
+                    </ul>
+
+
+                    <p class="font-12 mt-10 mb-10">
+                        <a href="?v=0&amp;lang=ar#!UsefulLinks" style="font-weight:600" class="ng-binding">
+                            <span class="FooterUsefulLinks"><i class="fa fa-link mr-5"></i> </span>
+                            روابط ذات صلة
+                        </a>
+
+                    </p>
+
+                    <h5 class="widget-title line-bottom text-right text-white mb-5 mt-15">اشترك في نشرة الإخبارية</h5>
+                    <form id="footer-mailchimp-subscription-form" class="newsletter-form mt-10 ng-pristine ng-valid-email ng-invalid ng-invalid-required" ng-submit="SaveNewsLetter($event)">
+                        <label class="display-block" for="mce-EMAIL"></label>
+                        <div class="input-group">
+                            <input type="email" name="NewsletterEmail" class="form-control ng-pristine ng-untouched ng-empty ng-valid-email ng-invalid ng-invalid-required" id="NewsletterEmail" ng-model="NewsLetter.Email" ng-required="true" data-height="37px" style="height: 37px;" placeholder="البريد الالكتروني" required="required">
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-colored btn-theme-colored m-0 Newsletter-btn">
+                                    <i class="fa fa-paper-plane text-white"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-4 pull-right">
+                <div class="widget dark">
+                    <h5 class="widget-title line-bottom text-right">اتصل بنا</h5>
+                    <div class="opening-hours">
+                        <ul class="list-border">
+                      
+                            <li class="clearfix">
+                                <span class="ng-binding"><i class="fa fa-map-marker mr-5"></i> الموقع :</span>
+                                <!-- ngIf: LangID==1 -->
+                                <!-- ngIf: LangID==2 --><div class="value pull-left" ng-if="LangID==2">عمان الدوار الرابع</div><!-- end ngIf: LangID==2 -->
+                            </li>
+                            <li class="clearfix">
+                                <span class="ng-binding"><i class="fa fa-envelope-open mr-5"></i> ص. ب. : </span>
+                                <div class="value pull-left">5694</div>
+                            </li>
+                            <li class="clearfix">
+                                <span class="ng-binding"><i class="fa fa-envelope mr-5"></i>الرمز البريدي : </span>
+                                <div class="value pull-left">11183</div>
+                            </li>
+                            <li class="clearfix">
+                                <span class="ng-binding"><i class="fa fa-phone-square mr-5"></i>الهاتف :</span>
+                                <div class="value pull-left" dir="auto">(962) 6 5622266</div>
+                            </li>
+                            <li class="clearfix">
+                                <span class="ng-binding"><i class="fa fa-fax mr-5"></i>رقم الفاكس : </span>
+                                <div class="value pull-left" dir="auto">(962) 6 5622201</div>
+                            </li>
+                            <li class="clearfix">
+                                <span class="ng-binding"><i class="fa fa-at mr-5"></i>البريد الالكتروني :</span>
+                                <div class="value pull-left">dewanlob@lob.gov.jo</div>
+                            </li>
+                            <li class="clearfix" style="cursor:pointer">
+                                <a href="?v=0&amp;lang=ar#!SiteMap">
+                                    <span class="ng-binding"><i class="fa fa-sitemap mr-5"></i> خريطة الموقع</span>
+                                </a>
+                            </li>
+
+
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-4 pull-right">
+                <div class="widget dark">
+                    <h5 class="widget-title line-bottom ng-binding">الاقتراحات&nbsp;و الاستفسارات</h5>
+                    <form id="footer_quick_contact_form" name="footer_quick_contact_form" class="quick-contact-form ng-pristine ng-invalid ng-invalid-required" ng-submit="SaveContactusApplication();">
+                        <div class="form-group">
+                            <input id="form_name" name="form_name" class="form-control ng-pristine ng-untouched ng-empty ng-invalid ng-invalid-required" type="text" ng-required="true" placeholder="ادخل الاسم" ng-model="FooterContactus.Data.Name" required="required" style="">
+                        </div>
+                        <div class="form-group">
+                            <input id="form_email" name="form_email" class="form-control ng-pristine ng-untouched ng-empty ng-invalid ng-invalid-required" type="text" ng-required="true" placeholder="ادخل البريد الالكتروني" ng-model="FooterContactus.Data.Email" required="required" style="">
+                        </div>
+                        <div class="form-group">
+                            <input id="form_subject" name="form_subject" class="form-control ng-pristine ng-untouched ng-empty ng-invalid ng-invalid-required" type="text" ng-required="true" placeholder="ادخل الموضوع" ng-model="FooterContactus.Data.Subject" required="required" style="">
+                        </div>
+                        <div class="form-group">
+                            <textarea id="form_message" name="form_message" class="form-control ng-pristine ng-untouched ng-empty ng-invalid ng-invalid-required" ng-required="true" placeholder="ادخل الرسالة" rows="3" ng-model="FooterContactus.Data.details" required="required" style=""></textarea>
+                        </div>
+                        <div class="form-group">
+                            <input id="form_botcheck" name="form_botcheck" class="form-control" type="hidden" value="" autocomplete="off" style="">
+                            <button type="submit" class="btn btn-default btn-transparent btn-xs btn-flat mt-0 ng-binding" data-loading-text="Please wait...">ارسل</button>
+                        </div>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid bg-theme-colored p-20 CopyRightContainer">
+        <div class="row text-center">
+            <div class="col-md-12">
+                <p class="font-11 m-0">CopyRight ©2019 <a href="http://dwt.jo" style="cursor:pointer;text-decoration:underline" target="_blank">DWT</a>. All Rights Reserved</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+<div id="FooterContactEmailBody" style="display: none" class="ng-scope">
+    <table>
+        <tbody><tr>
+            <th style="text-align: right" class="ng-binding">الاسم</th>
+            <td class="ng-binding"></td>
+        </tr>
+        <tr>
+            <th style="text-align: right" class="ng-binding">البريد الالكتروني</th>
+            <td class="ng-binding"></td>
+        </tr>
+        <tr>
+            <th style="text-align: right" class="ng-binding">موضوع المعلومات</th>
+            <td class="ng-binding"></td>
+        </tr>
+        <tr>
+            <th style="text-align: right" class="ng-binding">الرسالة</th>
+            <td class="ng-binding"></td>
+        </tr>
+
+
+    </tbody></table>
+</div></div>
+        <!-- Footer Section /- -->
+
+        <a class="scrollToTop" href=""><i class="fa fa-angle-up"></i></a>
+    </div>
+    <!-- end wrapper -->
+    <!-- Footer Scripts -->
+    <!-- external javascripts -->
+    <script src="javascript/jquery/jquery-3.7.1.min.js"></script>
+    <script src="plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="plugins/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="plugins/moment/min/moment.min.js"></script>
+
+    <!-- JS | jquery plugin collection for this theme -->
+    <!-- Revolution Slider 5.x SCRIPTS -->
+    <script src="javascript/ThemeJS/revolution-slider/js/jquery.themepunch.tools.min.js?v=5.24.7.1.3"></script>
+    <script src="javascript/ThemeJS/revolution-slider/js/jquery.themepunch.revolution.min.js?v=5.24.7.1.3"></script>
+
+    <!-- JS | Custom script for all pages -->
+    <!--<script src="javascript/ThemeJS/custom.js"></script>-->
+    <!-- SLIDER REVOLUTION 5.0 EXTENSIONS
+      (Load Extensions only on Local File Systems !
+       The following part can be removed on Server for On Demand Loading) -->
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.actions.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.carousel.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.kenburn.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.layeranimation.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.migration.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.navigation.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.parallax.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.slideanims.min.js?v=5.24.7.1.3"></script>
+    <script type="text/javascript" src="javascript/ThemeJS/revolution-slider/js/extensions/revolution.extension.video.min.js?v=5.24.7.1.3"></script>
+
+
+
+
+
+    <script src="javascript/dwtcore/dwtcore.min.js?v=5.24.7.1.3"></script>
+    <script src="javascript/dwtcore/dwtcore-animate.min.js?v=5.24.7.1.3"></script>
+    <script src="javascript/dwtcore/dwtcore-sanitize.min.js?v=5.24.7.1.3"></script>
+    <script src="javascript/dwtcore/dwtcore-messages.min.js?v=5.24.7.1.3"></script>
+    <script src="JavaScript/dwtcore-recaptcha.min.js?v=5.24.7.1.3"></script>
+    <script src="javascript/update-meta.min.js?v=5.24.7.1.3"></script>
+
+    <script src="plugins/lodash.js/lodash.min.js?v=5.24.7.1.3"></script>
+    <script src="javascript/sweetalert.min.js?v=5.24.7.1.3"></script>
+
+    <script src="plugins/crypto-js/crypto-js.js"></script>
+    <script src="plugins/crypto-js/aes.js"></script>
+    <script src="plugins/cbor-js/cbor.js"></script>
+    <script src="plugins/jsencrypt/jsencrypt.min.js"></script>
+    <script src="Controller/SystemStorage.js"></script>
+
+    <script src="Config.js?v=5.24.7.1.3"></script>
+    <script src="javascript/Script.js?v=5.24.7.1.3"></script>
+    <script src="Controller/Module.js?v=5.24.7.1.3"></script>
+    <script src="Controller/Master.js?v=5.24.7.1.3"></script>
+
+
+
+
+
+</body></html>
