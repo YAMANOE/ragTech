@@ -118,6 +118,30 @@ _ENTITY_BAD_WORDS: frozenset = frozenset([
     "أحكام", "لأغراض", "حيثما", "وردت", "المقررة", "المحددة",
 ])
 
+# Words that must never appear as the trailing word of an entity name.
+# These are prepositions, conjunctions, and adverbs that indicate the regex
+# over-captured into surrounding sentence context.
+_ENTITY_STOP_WORDS: frozenset = frozenset([
+    # Prepositions
+    "من", "في", "على", "إلى", "الى", "عن", "مع", "بعد", "قبل", "عند",
+    "حتى", "حتي", "خلال", "لدى", "لدي", "لدن", "منذ", "تجاه", "إزاء",
+    "بين", "فوق", "تحت", "أمام", "أمام", "خلف", "دون", "بدون", "غير",
+    # Conjunctions
+    "و", "أو", "او", "ثم", "بل", "لكن", "لكنه", "لكنها", "سواء",
+    # Relative / subordinating
+    "التي", "الذي", "اللذين", "اللتين", "الذين", "اللواتي",
+    "ما", "مما", "لما", "بما", "عما",
+    # Negation & conditionals
+    "لم", "لن", "لا", "إن", "ان", "إذا", "اذا", "إلا", "الا",
+    # Common trailing artifacts in Jordanian legal text
+    "سنتان", "سنة", "سنوات", "شهرا", "شهران", "أشهر",
+    "رئيس", "نائب",
+    # ال-prefixed words that are legal article markers / adjectival tails,
+    # not part of the entity name itself
+    "المادة", "الفقرة", "البند", "القائم", "الحالي", "التالية", "التالي",
+    "المشار", "المذكور", "المذكورة", "الاول", "الأول",
+])
+
 # Lightweight registry of common Jordanian official entities.
 # Used to positively validate or supplement extracted entity names.
 JORDANIAN_ENTITY_REGISTRY: frozenset = frozenset([
@@ -243,7 +267,7 @@ RE_REPEAL = re.compile(
 #   \b   — word boundary prevents matching 'وزارة' inside 'الوزارة'
 #   _AR_WORD — one Arabic word (no space), so greedy space-capture is impossible
 #   {0,2} — allow up to 3 words total (prefix + 2), then validate_entity_candidate()
-_AR_WORD = r"[\u0600-\u06FF]+"   # single Arabic word (no embedded spaces)
+_AR_WORD = r"[\u0621-\u063A\u0641-\u064A\u064B-\u065E\u066E-\u06D3]+"  # Arabic letters + diacritics, NO punctuation
 
 RE_MINISTRY   = re.compile(r"\bوزارة\s+"   + _AR_WORD + r"(?:\s+" + _AR_WORD + r"){0,2}", re.UNICODE)
 RE_AUTHORITY  = re.compile(r"\b(?:هيئة|سلطة)\s+" + _AR_WORD + r"(?:\s+" + _AR_WORD + r"){0,2}", re.UNICODE)
@@ -612,8 +636,60 @@ class ArabicTextUtils:
         for pattern, etype in patterns:
             for m in pattern.finditer(text):
                 name = m.group(0).strip()
-                # Trim trailing punctuation
-                name = re.sub(r"[\u060c,.\)\(\:\u060b]+$", "", name).strip()
+
+                # 1. Split at Arabic/ASCII punctuation embedded in the match.
+                #    _AR_WORD uses [\u0600-\u06FF]+ which includes Arabic comma
+                #    (\u060c) and semicolon (\u061b), so they can be captured
+                #    inside what looks like a single "word". Split and keep only
+                #    the first (pre-punctuation) segment.
+                name = re.split(r"[\u060c\u060b\u061b\u061f;,]+", name)[0].strip()
+
+                # 2. Trim any remaining trailing ASCII/Arabic punctuation.
+                name = re.sub(r"[,.()\[\]:\u060b]+$", "", name).strip()
+
+                # 3. Walk the word list: always keep the trigger word (مجلس،
+                #    وزارة, etc.), then keep each subsequent word only if it
+                #    does NOT signal entry into surrounding sentence context:
+                #      a) direct stop word (من، في، على، إلى …)
+                #      b) word with prepositional prefix: ب، ل، ف، ك
+                #         e.g. بموافقة، للمفاوضة، فيجري، كذلك
+                #      c) و-prefixed word that is NOT وال (والتجارة، والري are
+                #         legitimate parts of compound ministry names; وموظفين،
+                #         واعضاءه are pronoun/indefinite context words).
+                #      d) position 3+ words must start with ال or وال; bare
+                #         indefinite words (شخصا، اربع، ثماني، دورة …) at
+                #         position 3 or later are trailing sentence context.
+                #      e) words ending in Arabic pronoun suffixes (ها، هم …)
+                #         are possessive phrases, not entity name components.
+                words = name.split()
+                if len(words) > 1:
+                    clean = [words[0]]   # trigger word is always valid
+                    for idx, w in enumerate(words[1:], start=1):
+                        if w in _ENTITY_STOP_WORDS:
+                            break
+                        if len(w) > 1 and w[0] in "بلفك":
+                            break
+                        if len(w) > 1 and w[0] == "و" and not w.startswith("وال"):
+                            break
+                        # Position 3+ (idx >= 2): only keep words with definite
+                        # article (ال) or وال-prefixed compounds.
+                        if idx >= 2 and not (w.startswith("ال") or w.startswith("وال")):
+                            break
+                        # Reject words ending in Arabic pronoun suffixes — they
+                        # are possessive phrases (قطرها، أعضاءهم …), not parts
+                        # of an entity name.
+                        if any(w.endswith(s) for s in ("ها", "هم", "هما", "هن", "كم", "كن", "ني", "نا")):
+                            break
+                        clean.append(w)
+                    words = clean
+
+                # Require at least 2 words: a lone trigger word (دائرة، مجلس …)
+                # after cleaning is too generic to be a named entity.
+                if len(words) < 2:
+                    continue
+
+                name = " ".join(words)
+
                 if not ArabicTextUtils.validate_entity_candidate(name):
                     continue
                 if name not in seen:
