@@ -223,7 +223,7 @@ RE_LEGAL_BASIS = re.compile(
 
 # Cross-reference to another law in text
 RE_DOC_REFERENCE = re.compile(
-    rf"(?:القانون|النظام|قرار|الاتفاقية)\s+رقم\s*[\(\（]?\s*({_NUM_PAT})\s*[\)\）]?\s*لسنة\s*({_NUM_PAT}{{4}})",
+    rf"(القانون|النظام|قرار|الاتفاقية|قانون|نظام)\s+رقم\s*[\(\（]?\s*({_NUM_PAT})\s*[\)\）]?\s*لسنة\s*({_NUM_PAT}{{4}})",
     re.UNICODE,
 )
 
@@ -513,13 +513,15 @@ class ArabicTextUtils:
     def extract_cross_references(text: str) -> list[dict]:
         """
         Find references to other legislation: رقم (X) لسنة YYYY.
-        Returns list of {'doc_number': str, 'year': str, 'start': int}.
+        Returns list of {'token': str, 'doc_number': str, 'year': str, 'start': int, 'raw': str}.
+        token is the leading Arabic word (e.g. 'القانون', 'قانون', 'النظام').
         """
         results = []
         for m in RE_DOC_REFERENCE.finditer(text):
             results.append({
-                "doc_number": ArabicTextUtils.convert_arabic_to_western_digits(m.group(1)),
-                "year": ArabicTextUtils.convert_arabic_to_western_digits(m.group(2)),
+                "token": m.group(1),
+                "doc_number": ArabicTextUtils.convert_arabic_to_western_digits(m.group(2)),
+                "year": ArabicTextUtils.convert_arabic_to_western_digits(m.group(3)),
                 "start": m.start(),
                 "raw": m.group(0),
             })

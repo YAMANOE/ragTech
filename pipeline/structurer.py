@@ -738,13 +738,24 @@ class LegislationStructurer:
 # Module-level helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+_TOKEN_TYPE_MAP = {
+    "القانون": "law",
+    "قانون":   "law",
+    "النظام":  "regulation",
+    "نظام":    "regulation",
+    "قرار":    "decision",
+    "الاتفاقية": "agreement",
+}
+
+
 def _make_target_slug(ref: dict) -> str:
     """
     Build a target doc_slug from a cross-reference dict.
-    Since we don't know the doc_type from a reference, we use 'doc' as placeholder.
-    The actual slug can be corrected manually or during a cross-reference resolution step.
+    Uses the captured token type to generate the correct prefix (law-, regulation-, etc.).
+    Falls back to 'doc-' if the token is not recognised.
     """
     number = ref.get("doc_number", "")
     year   = ref.get("year", "")
-    # We don't know the type from context — use 'doc' as placeholder type
-    return f"doc-{year}-{number}"
+    token  = ref.get("token", "")
+    prefix = _TOKEN_TYPE_MAP.get(token, "doc")
+    return f"{prefix}-{year}-{number}"
