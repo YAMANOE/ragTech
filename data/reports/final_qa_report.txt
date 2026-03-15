@@ -1,0 +1,62 @@
+================================================================
+  FINAL QA REPORT  —  2026-03-15 09:32
+================================================================
+
+── 1. DOCUMENTS (documents.csv) ─────────────────────────────
+  Total rows          : 99
+  Unique doc_slugs    : 99
+  ✅ No duplicate doc_slugs
+  Status distribution :
+      active          53
+      repealed        46
+  ✅ Null/empty title_ar  : 0
+  ❌ Null publication_date: 1  → ['legislation-8']
+
+── 2. SECTIONS (sections.csv) ────────────────────────────────
+  Total rows          : 5839
+  Docs with sections  : 99
+  Avg sections/doc    : 59.0
+  ✅ Empty original_text  : 0
+
+── 3. ENTITIES (entities.csv) ────────────────────────────────
+  Total rows          : 579
+  Unique entity_ids   : 272
+  Type distribution   :
+      authority            94
+      council              246
+      court                72
+      department           57
+      ministry             110
+  ✅ Names > 5 words      : 0
+
+── 4. TOPICS (document_topics.csv) ──────────────────────────
+  Total assignments   : 120
+  ✅ Docs with 0 topics  : 0
+  Confidence scores   : min=0.40  avg=0.71  max=1.00
+
+── 5. RELATIONSHIPS (document_relationships.csv) ────────────
+  Total relationships : 13
+      AMENDS                    1
+      BASED_ON                  8
+      REFERS_TO                 4
+  ✅ Relationships loaded
+
+── 6. JSON FILES (data/structured/docs/) ────────────────────
+  Total files         : 99
+  ✅ غير ساري + active mismatch: 0
+  ✅ Files with 0 topics : 0
+
+================================================================
+  SUMMARY
+================================================================
+  ✅ No duplicate doc_slugs
+  ✅ No null title_ar
+  ❌ No null publication_date
+  ✅ No empty section original_text
+  ✅ No dirty entity names (>5 words)
+  ✅ All docs have ≥1 topic
+  ✅ No غير ساري / active mismatch
+  ✅ No JSON files with 0 topics
+
+  OVERALL: ❌ SOME CHECKS FAILED
+================================================================
