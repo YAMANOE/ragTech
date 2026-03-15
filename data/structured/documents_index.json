@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-14T19:47:54.855813+00:00",
+  "generated_at": "2026-03-15T08:08:56.091863+00:00",
   "count": 99,
   "documents": [
     {
@@ -1779,7 +1779,7 @@
       "source_status_text": "نافذ",
       "primary_topic": "topic-agricultural-insurance-law",
       "primary_topic_ar": "قانون الزراعة والتأمين الزراعي وصناديق التكافل",
-      "section_count": 16,
+      "section_count": 38,
       "relationship_count": 1,
       "json_path": "docs/legislation-3452.json",
       "summary_path": "summaries/legislation-3452_summary.json"

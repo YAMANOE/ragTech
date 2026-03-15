@@ -16,13 +16,13 @@
   "primary_topic": "topic-agricultural-insurance-law",
   "primary_topic_ar": "قانون الزراعة والتأمين الزراعي وصناديق التكافل",
   "primary_topic_confidence": 1.0,
-  "entity_count": 3,
-  "section_count": 16,
+  "entity_count": 4,
+  "section_count": 38,
   "article_count": 14,
   "relationship_count": 1,
   "has_legal_basis": true,
-  "source_url": "https://www.lob.gov.jo/?v=2&lang=ar#!/LegislationDetails?LegislationID=3452&LegislationType=2&isMod=false",
+  "source_url": "",
   "json_path": "docs/legislation-3452.json",
   "summary_path": "summaries/legislation-3452_summary.json",
-  "structured_at": "2026-03-12T07:19:38.870449+00:00"
+  "structured_at": "2026-03-15T08:08:56.090630+00:00"
 }
