@@ -19,7 +19,7 @@ python-dotenv>=1.0.0        # Load .env for LOB credentials / proxy settings
 loguru>=0.7.2               # Structured, rotating logs with async support
 
 # ── AI / LLM ─────────────────────────────────────────────────────────────────
-google-genai>=1.0.0         # Gemini API — topic confidence enhancement post-processor
+anthropic>=0.25.0           # Anthropic Claude API — topic confidence enhancement post-processor
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
 tqdm>=4.66.1                # Progress bars for batch operations

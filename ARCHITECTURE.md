@@ -1,15 +1,16 @@
 # Jordanian RegTech – Legislative Intelligence Pipeline
 ## Architecture & Design Document
 
-**Version:** 3.0
-**Last updated:** March 14, 2026
+**Version:** 3.1
+**Last updated:** March 15, 2026
 **Scope:** Layer 1 — Legislative Intelligence (compliance-ready design)
 **Primary Source:** Jordanian Bureau of Legislation and Opinion (LOB) — lob.gov.jo
 **Language:** Arabic (Jordan)
 
-**Current status:** Working. First 100 laws scraped at 98% pipeline success rate.
+**Current status:** Working. 99 structured documents. All 11/11 QA checks passing. 91/91 tests passing.
 **Batch run completed:** 2026-03-14T17:56–18:19 UTC (23 minutes for 100 documents)
-**Quality metrics:** topic_assignments=55.1%, legal_basis=32.7%, entities=73.5%, avg_sections=59.4, validation_passed=100%
+**Post-processing improvements applied:** 2026-03-15
+**Quality metrics (as of 2026-03-15):** topic_assignments=100% (99/99), legal_basis=38.4% (38/99), sections=8,512, entities=549 rows/270 unique, tests=91/91, validation_passed=100%
 
 ---
 
@@ -109,6 +110,7 @@
 | **python-dotenv** | Environment config | Keep credentials and paths out of source code |
 | **uuid** | Stable identifiers | Deterministic UUID5 for stable IDs across re-runs |
 | **python-dateutil** | Flexible date parsing | Handles ambiguous date formats in LOB pages |
+| **rapidfuzz** | Fuzzy string matching | Entity name deduplication — merges near-duplicate ministry/authority names (e.g. وزارة الماليه → وزارة المالية) |
 
 **Intentionally excluded:**
 - No ML/NLP models in Layer 1 (camel-tools is heavy — add for Layer 2 NER)
@@ -130,7 +132,7 @@ new-project/
 ├── config/
 │   ├── __init__.py
 │   ├── settings.py        ← All paths, LOB selectors, pipeline parameters, type maps
-│   └── topics.yaml        ← Hierarchical topic taxonomy (22 topics, 2 levels)
+│   └── topics.yaml        ← Hierarchical topic taxonomy (21 topics, all Level 1)
 │
 ├── models/
 │   ├── __init__.py
@@ -151,7 +153,9 @@ new-project/
 │   ├── cleaner.py         ← Arabic text cleaning pipeline (ArabicTextCleaner)
 │   ├── structurer.py      ← Full document object assembly (LegislationStructurer)
 │   ├── exporter.py        ← CSV export — relational + graph (LegislationExporter)
-│   └── validator.py       ← QA validation rules (PipelineValidator)
+│   ├── validator.py       ← QA validation rules (PipelineValidator)
+│   ├── gemini_enhancer.py ← Gemini API post-processing enhancer (optional enrichment)
+│   └── claude_enhancer.py ← Claude API post-processing enhancer (optional enrichment)
 │
 ├── scripts/
 │   ├── __init__.py
@@ -159,7 +163,9 @@ new-project/
 │   ├── run_first_100.py   ← Batch runner: LOBListingScraper + pipeline per item
 │   ├── run_mvp.py         ← MVP: 5 target laws (URLs are placeholders — not working)
 │   ├── check_output.py    ← Diagnostic: prints structured output fields
-│   └── _inspect_html.py   ← HTML inspection: finds ng-click/ng-repeat in saved HTML
+│   ├── _inspect_html.py   ← HTML inspection: finds ng-click/ng-repeat in saved HTML
+│   ├── retopic.py         ← Re-run topic classification on all structured docs (no re-fetch)
+│   └── dedup_entities.py  ← Post-process entity deduplication using RapidFuzz fuzzy matching
 │
 ├── data/
 │   ├── raw/
@@ -1050,12 +1056,25 @@ https://www.lob.gov.jo/?v=2&lang=ar#!/LegislationDetails?LegislationID={pmk_ID}&
 | نافذ | active |
 | نافذة | active |
 | ساري | active |
-| ملغى | repealed |
-| ملغية | repealed |
+| ساريه | active |
+| سارية | active |
+| ساري المفعول | active |
+| لا يزال نافذاً | active |
+| مؤقت | draft |
 | معدّل | amended |
 | معدل | amended |
-| مؤقت | draft |
-| غير ساري | **BUG: maps to active instead of repealed** (see Section 18, Bug 1) |
+| معدّلة | amended |
+| معدلة | amended |
+| ملغى | repealed |
+| ملغاة | repealed |
+| ملغية | repealed |
+| ملغي | repealed |
+| غير ساري | repealed |
+| غير سارية | repealed |
+| غير نافذ | repealed |
+| منتهية | repealed |
+
+*Status mapping expanded from 7 to 20 values as of 2026-03-15. Bug 1 (غير ساري → active) is fixed.*
 
 ---
 
@@ -1162,8 +1181,9 @@ Example: `legislation-36` (the 1952 Hashemite Constitution).
 
 ### Taxonomy
 
-- 22 topics at 2 levels in `config/topics.yaml`
-- Each topic: `id`, `name_ar`, `name_en`, `level` (1 or 2), `parent` (null for top-level), `keywords_ar` (list)
+- 21 topics, all Level 1, in `config/topics.yaml`
+- Each topic: `id`, `name_ar`, `name_en`, `level` (always 1), `parent` (null), `keywords_ar` (list)
+- Level 2 sub-topics are structurally supported by the schema but not yet defined
 
 ### Scoring Algorithm
 
@@ -1185,7 +1205,7 @@ for topic in all_topics:
 
 The highest-confidence topic gets `is_primary=True`. A single title keyword match (0.40) exactly meets the threshold.
 
-### Primary Topic Categories
+### Primary Topic Categories (21 topics, all Level 1)
 
 ```
 constitutional-administrative-law  القانون الدستوري والإداري
@@ -1198,18 +1218,17 @@ investment-law                     قانون الاستثمار
 banking-financial-services         القانون المصرفي والخدمات المالية
 environmental-law                  قانون البيئة والموارد الطبيعية
 health-law                         قانون الصحة العامة
-education-law                      قانون التعليم والبحث العلمي
-real-estate-law                    قانون العقارات والإنشاءات
-transport-infrastructure           قانون النقل والبنية التحتية
-it-telecom-law                     قانون تكنولوجيا المعلومات والاتصالات
-food-agriculture-law               قانون الغذاء والزراعة
-energy-mining-law                  قانون الطاقة والثروة المعدنية
-family-personal-status             قانون الأحوال الشخصية والأسرة
-social-welfare-law                 قانون الرعاية الاجتماعية والتنمية
-military-security-law              القانون العسكري والأمني
-intellectual-property              قانون الملكية الفكرية
-international-treaties             المعاهدات والاتفاقيات الدولية
-customs-trade-law                  قانون الجمارك والتجارة الخارجية
+education-law                      قانون التعليم
+personal-status-law                قانون الأحوال الشخصية
+land-planning-law                  قانون الأراضي والتخطيط العمراني
+it-digital-law                     قانون تكنولوجيا المعلومات والاتصالات
+energy-law                         قانون الطاقة والمناجم
+transport-law                      قانون النقل والمواصلات
+public-procurement-contracting     المشتريات الحكومية والعقود
+judiciary-legal-profession         القضاء والمهن القانونية
+international-agreements-law       قانون تصديق الاتفاقيات الدولية والقروض  ← NEW
+agricultural-insurance-law         قانون الزراعة والتأمين الزراعي وصناديق التكافل
+digital-assets-law                 قانون الأصول الرقمية والعملات الافتراضية         ← NEW
 ```
 
 ---
@@ -1330,7 +1349,7 @@ print('Done')
 
 ## 17. Current Quality Metrics
 
-From batch run completed 2026-03-14T17:56–18:19 UTC.
+From batch run 2026-03-14 + post-processing improvements applied 2026-03-15.
 
 | Metric | Value | Detail |
 |--------|-------|--------|
@@ -1338,26 +1357,30 @@ From batch run completed 2026-03-14T17:56–18:19 UTC.
 | Items attempted | 100 | — |
 | Pipeline success | 98 (98%) | 2 fatal failures |
 | Pipeline failures | 2 (2%) | law-2006-49, law-1972-21 |
-| Validation passed | 100% | All 98 pass error-level checks |
+| Structured JSON files | 99 | (99 = 98 + 1 earlier standalone run) |
+| Validation passed | 100% | All 99 pass error-level checks |
+| QA checks | 11/11 passing | See data/reports/final_qa_report_v2.txt |
+| Test suite | 91/91 passing | — |
 | has_publication_date | 99.0% | Only 1 doc missing |
-| has_entities | 73.5% | 72 of 98 docs have extracted entities |
-| has_topic_assignments | 55.1% | 54 of 98 docs have at least one topic |
-| has_legal_basis | 32.7% | 32 of 98 have extracted legal basis clause |
-| has_relationships | 12.2% | 12 of 98 have detected inter-doc relationships |
-| avg_sections per doc | 59.4 | Range: ~20 (short regs) to 175 (Constitution) |
+| has_topic_assignments | 100% | 99/99 — up from 55.1% (retopic.py run 2026-03-15) |
+| has_legal_basis | 38.4% | 38/99 — up from 32.7% |
+| has_relationships | 16.2% | 16/99 — up from 12.2% |
+| total_sections | 8,512 | Up from ~5,839 after paragraph splitting fix |
+| total_entities | 549 rows | 270 unique canonical names (after RapidFuzz dedup) |
+| entity_dedup_reduction | 298 → 270 | 28 near-duplicate names merged |
+| topic_rows | 147 | 99 docs, avg ~1.5 topics each |
+| doc_types | law×96, regulation×2, constitution×1 | — |
+| status_mismatches | 0 | غير ساري bug fixed; 20-entry status map |
 | Batch duration | ~23 minutes | ~14 seconds/document |
-| Structured JSON files | 99 | (99 = 98 success + 1 from earlier standalone run) |
-| Relational CSV rows | 132 documents.csv rows | Includes reprocessed docs |
 
 ---
 
 ## 18. Known Bugs and Limitations
 
-### Bug 1: "غير ساري" incorrectly maps to "active"
+### ~~Bug 1: "غير ساري" incorrectly maps to "active"~~ — FIXED (2026-03-15)
 **Location:** `scripts/run_first_100.py`, `_AR_TO_EN_STATUS` dict  
-**Symptom:** Laws with `Status_AR="غير ساري"` (no longer in effect) are stored as `status_normalized="active"`.  
-**Example:** The pre-1952 Jordanian Constitution (legislation-9) shows `source_status_text="غير ساري"` but `status="active"`.  
-**Fix:** Add `"غير ساري": "repealed"` and `"ساري": "active"` to the `_AR_TO_EN_STATUS` dict.
+**Was:** Laws with `Status_AR="غير ساري"` (not in effect) stored as `status_normalized="active"`.  
+**Fix applied:** Status mapping expanded from 7 to 20 values. `"غير ساري"` → `"repealed"` and all related variants added. Confirmed 0 mismatches in QA check 5a.
 
 ### Bug 2: doc_number not extracted for constitutions
 **Location:** `utils/arabic_utils.py`, `extract_doc_number_year()`  
@@ -1376,14 +1399,10 @@ From batch run completed 2026-03-14T17:56–18:19 UTC.
 **Example:** "04/05/2025" is interpreted as 5 April instead of 4 May.  
 **Fix:** Default to MM/DD/YYYY for LOB-origin pages. Add contextual label detection (تاريخ النشر) to anchor field meaning.
 
-### Bug 5: Topic coverage only 55.1%
+### ~~Bug 5: Topic coverage only 55.1%~~ — FIXED (2026-03-15)
 **Location:** `config/topics.yaml`, `pipeline/structurer.py`  
-**Symptom:** 44.9% of scraped laws have no topic assigned.  
-**Root causes:**
-- Constitutional and framework laws don't match specific domain keywords
-- Topic taxonomy missing coverage areas (general administrative procedures, etc.)
-- Keyword lists too narrow for legal language from 1940s–1970s laws
-**Fix:** Expand keyword lists; add `general-administrative-law` and `framework-legislation` topics; consider lowering threshold cautiously to 0.30 for documents without any title keyword match.
+**Was:** 44.9% of scraped laws had no topic assigned.  
+**Fix applied:** Keyword lists massively expanded in `topics.yaml` (each topic now has 25–50+ keywords covering edge-case legal phrasing from 1940s–1970s laws). Two new topics added: `international-agreements-law` and `digital-assets-law`. Topic classification re-run via `scripts/retopic.py`. Result: 100% coverage (99/99 docs).
 
 ### Bug 6: Relationship coverage only 12.2%
 **Location:** `pipeline/structurer.py`, `_detect_relationships()`  
@@ -1407,7 +1426,8 @@ From batch run completed 2026-03-14T17:56–18:19 UTC.
 
 ### Bug 9: sections.csv row count misleading
 **Location:** `pipeline/exporter.py`  
-**Symptom:** `wc -l sections.csv` returns 93,031 but there are approximately 5,800 actual section rows. Multi-line Arabic text in `original_text` and `normalized_text` fields contains embedded newlines that are valid inside CSV quoted strings.  
+**Symptom:** `wc -l sections.csv` returns far more lines than actual section rows. Multi-line Arabic text in `original_text` and `normalized_text` fields contains embedded newlines that are valid inside CSV quoted strings.  
+**Actual row count:** 8,512 rows (confirmed via pandas). Note: count increased from ~5,839 to 8,512 after the paragraph splitting fix (see Post-Processing Improvements below).  
 **Status:** Not a bug per se — the CSV is valid and readable by pandas and csv.reader. Just don't count rows with shell line-count tools.  
 **Fix:** Use `python -c "import pandas as pd; print(len(pd.read_csv(..., sep='|')))"` to count actual rows.
 
@@ -1415,6 +1435,20 @@ From batch run completed 2026-03-14T17:56–18:19 UTC.
 **Location:** `utils/id_generator.py`, `section_id()`  
 **Symptom:** Section type abbreviation uses first 3 chars. If a custom section type like "ann" and "annex" both truncate to "ann", they would share the same abbreviation prefix.  
 **Current fixed abbreviations:** pre, prt, cha, art, par, cla, anx, ttl — no collision risk for these 8 known types. Future types should be added explicitly.  
+
+### Post-Processing Improvements Applied (2026-03-15)
+
+The following improvements were made after the initial batch run without re-scraping:
+
+1. **Entity deduplication (RapidFuzz):** `scripts/dedup_entities.py` merges near-duplicate entity names using fuzzy matching (threshold 90). Reduced unique entity names from 298 → 270. Raw entity rows: 549.
+
+2. **Paragraph splitting fix:** A parser bug caused some articles to accumulate sub-paragraph blocks as a single section instead of splitting them individually. Fixed in `pipeline/parser.py`. Section count increased from ~5,839 → 8,512 after re-structuring.
+
+3. **doc_type 3-pass detection:** `utils/arabic_utils.py` `detect_doc_type()` now runs three passes — title first-word exact match, title keyword scan, then fallback to LOB API type field — eliminating `unknown` doc types. All 99 docs now have a recognized type.
+
+4. **Topic coverage to 100%:** `scripts/retopic.py` re-ran topic classification across all 99 structured documents after expanding keyword lists and adding 2 new topics (`international-agreements-law`, `digital-assets-law`).
+
+5. **Status mapping expanded to 20 values:** `_AR_TO_EN_STATUS` dict expanded from 7 to 20 entries. All `غير ساري` and related Arabic status variants now correctly map to `repealed` or `active`.
 
 ### Limitation: Sequential fetching only
 No parallelization for fetching. At 14s/document, a full corpus scrape at 1000 laws would take ~4 hours. Parallelization risks IP blocking or rate-limit violations.

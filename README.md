@@ -3,8 +3,8 @@
 A production-ready Python pipeline for scraping, cleaning, structuring, and exporting
 Jordanian legislation from the Bureau of Legislation and Opinion (LOB) website.
 
-**Current state:** 100 laws scraped, 98% success rate, 99 structured documents in `data/structured/docs/`.
-Last batch completed: 2026-03-14 (23 minutes, 100 laws).
+**Current state:** 99 structured documents. 100% topic coverage. 11/11 QA checks passing. 91/91 tests passing.
+Last batch completed: 2026-03-14. Post-processing improvements applied: 2026-03-15.
 
 ---
 
@@ -65,13 +65,19 @@ It runs 6 stages on each document:
 |--------|-------|
 | Scraped from LOB | 100 |
 | Pipeline success | 98 / 100 (98%) |
-| Validation passed | 100% of successful runs |
+| Structured documents | 99 |
+| Validation passed | 100% |
+| QA checks | 11 / 11 passing |
+| Test suite | 91 / 91 passing |
 | Has publication date | 99% |
-| Has extracted entities | 73.5% |
-| Has topic assignment | 55.1% |
-| Has legal basis extracted | 32.7% |
-| Has inter-doc relationships | 12.2% |
-| Average sections per law | 59.4 |
+| Has topic assignment | 100% (99/99) |
+| Has legal basis extracted | 38.4% (38/99) |
+| Has inter-doc relationships | 16.2% (16/99) |
+| Total sections | 8,512 |
+| Unique entity names | 270 (549 raw rows) |
+| Topic rows | 147 |
+| Doc types | law×96, regulation×2, constitution×1 |
+| Status mismatches | 0 (fixed) |
 | Failed documents | law-2006-49, law-1972-21 |
 
 ---
@@ -92,16 +98,16 @@ All files are pipe-delimited (`|`), UTF-8 with BOM. Import directly into Postgre
 
 | File | Description | Rows (approx) |
 |------|-------------|---------------|
-| `documents.csv` | One row per law | ~132 (99 unique after dedup) |
+| `documents.csv` | One row per law | 99 |
 | `versions.csv` | One row per version. Currently v1 only | ~99 |
-| `sections.csv` | One row per structural unit (article, chapter, etc.) | ~5,800 actual rows* |
-| `section_compliance_flags.csv` | Compliance flag columns per section | ~5,800 |
-| `entities.csv` | Deduplicated named institutions | ~200+ |
-| `topics.csv` | Topic taxonomy nodes | ~22+ |
-| `document_topics.csv` | Doc-topic junction with confidence scores | ~100+ |
-| `document_relationships.csv` | Inter-doc edges (AMENDS, REPEALS, etc.) | ~50+ |
+| `sections.csv` | One row per structural unit (article, chapter, etc.) | 8,512 actual rows* |
+| `section_compliance_flags.csv` | Compliance flag columns per section | 8,512 |
+| `entities.csv` | Deduplicated named institutions | 549 rows, 270 unique names |
+| `topics.csv` | Topic taxonomy nodes | 21 topics |
+| `document_topics.csv` | Doc-topic junction with confidence scores | 147 rows (99/99 docs covered) |
+| `document_relationships.csv` | Inter-doc edges (AMENDS, REPEALS, etc.) | 16 edges |
 
-*Note: `sections.csv` appears to have 93,000+ lines when counted with `wc -l` because the `original_text` field contains embedded newlines. Use pandas or `csv.reader` to count actual rows.
+*Note: `sections.csv` contains 8,512 actual data rows (use pandas or `csv.reader` to count — `wc -l` overcounts due to embedded newlines in Arabic text fields).
 
 ### Graph CSV (exports/graph/)
 
@@ -159,8 +165,8 @@ df = pd.read_csv("exports/relational/documents.csv", sep="|", encoding="utf-8-si
 | Script | What it does |
 |--------|-------------|
 | `scripts/run_first_100.py` | **Main batch runner.** Discovers 100 laws from LOB listing and runs the full pipeline on each |
-| `scripts/run_pipeline.py` | **Single document runner.** Takes `--url` + `--slug` arguments |
-| `scripts/check_output.py` | **Diagnostic.** Prints fields of a structured document for inspection |
+| `scripts/run_pipeline.py` | **Single document runner.** Takes `--url` + `--slug` arguments || `scripts/retopic.py` | **Re-topic.** Re-runs topic classification on all existing structured docs without re-fetching |
+| `scripts/dedup_entities.py` | **Entity dedup.** Post-processes entity names using RapidFuzz fuzzy matching to merge near-duplicates || `scripts/check_output.py` | **Diagnostic.** Prints fields of a structured document for inspection |
 | `scripts/_inspect_html.py` | **Debug.** Examines saved HTML to find Angular directives |
 | `scripts/run_mvp.py` | **Broken.** MVP runner with 5 hardcoded laws — URLs are not filled in yet |
 
@@ -182,29 +188,27 @@ Topic taxonomy is in `config/topics.yaml`. Add keywords to improve topic coverag
 
 ## What Needs Improvement
 
+### Recently Fixed (2026-03-15)
+- ~~**Status mapping bug** (غير ساري → active):~~ Fixed. Status map expanded to 20 values. 0 mismatches.
+- ~~**Topic coverage (55.1%):**~~ Fixed. Topics expanded + 2 new topics added. Now 100% (99/99 docs).
+
 ### High Priority
 
-1. **Status mapping bug:** Laws with Arabic status "غير ساري" (not in effect) are stored as `status="active"`. Fix: add `"غير ساري": "repealed"` to the status mapping in `run_first_100.py`.
+1. **Legal basis extraction (38.4%):** The regex still misses older legal formulations. Older laws from the 1950s–1970s use different phrasing not covered by the current trigger-word list.
 
-2. **Topic coverage (55.1%):** 45% of laws have no topic assigned. Expanding keyword lists in `topics.yaml` is the easiest fix. Consider adding a fallback "general-legislation" topic for unmatched documents.
+2. **Relationship detection (16.2%):** Only 16 of 99 laws have detected inter-document relationships. Most cross-references are not being captured. The pattern `"القانون رقم N لسنة YYYY"` misses informal citations.
 
-3. **Legal basis extraction (32.7%):** The regex misses older legal formulations. Older laws from the 1950s–1970s use different phrasing not covered by the current trigger-word list.
+3. **doc_number extraction for constitutions:** Constitutions have no "رقم" number in their title, so they get fallback slugs like `legislation-36` instead of `constitution-1952`. A year-only extraction pattern for دستور titles would fix this.
 
 ### Medium Priority
 
-4. **Relationship detection (12.2%):** Only 12 of 98 laws have detected inter-document relationships. Most cross-references are not being captured. The pattern `"القانون رقم N لسنة YYYY"` misses informal citations.
+4. **Date format ambiguity:** When day and month are both ≤ 12, the code assumes DD/MM/YYYY. LOB appears to use MM/DD/YYYY in some places, causing off-by-one-month errors.
 
-5. **doc_number extraction for constitutions:** Constitutions have no "رقم" number in their title, so they get fallback slugs like `legislation-36` instead of `constitution-1952`. A year-only extraction pattern for دستور titles would fix this.
+5. **Log file explosion:** Every pipeline component creates a new timestamped log file per instantiation. A 100-document batch creates 100+ log files. Fix: move `logger.add()` calls to the batch runner.
 
-6. **Date format ambiguity:** When day and month are both ≤ 12, the code assumes DD/MM/YYYY. LOB appears to use MM/DD/YYYY in some places, causing off-by-one-month errors.
+6. **topics.csv duplicates:** Running `export_all()` appends duplicate topic rows. Use `sort -u` on topic_id or add a dedup set in the exporter.
 
-### Low Priority
-
-7. **Log file explosion:** Every pipeline component creates a new timestamped log file per instantiation. A 100-document batch creates 100+ log files. Fix: move `logger.add()` calls to the batch runner.
-
-8. **topics.csv duplicates:** Running `export_all()` appends duplicate topic rows. Use `sort -u` on topic_id or add a dedup set in the exporter.
-
-9. **run_mvp.py is not functional:** URLs in `MVP_TARGETS` are placeholder strings that need to be replaced with real LOB URLs.
+7. **run_mvp.py is not functional:** URLs in `MVP_TARGETS` are placeholder strings that need to be replaced with real LOB URLs.
 
 ### Not Started (Layer 2)
 
@@ -244,6 +248,7 @@ regex>=2023.12.25
 python-dotenv>=1.0.0
 tqdm>=4.66.0
 python-dateutil>=2.8.2
+rapidfuzz>=3.6.0
 ```
 
 Python 3.10+ required.
