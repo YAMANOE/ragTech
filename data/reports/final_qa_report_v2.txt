@@ -1,28 +1,26 @@
 FULL QA CHECK v2 — March 15, 2026
 ============================================================
 
-[FAIL ❌] 1a. Total rows == 99
-        rows=100
-[FAIL ❌] 1b. All slugs unique (no dupes)
-        dupes=['legislation-3452']
+[PASS ✅] 1a. Total rows == 99
+        rows=99
+[PASS ✅] 1b. All slugs unique (no dupes)
 [PASS ✅] 1c. Zero unknown doc_type
 [PASS ✅] 2a. Row count > 0
-        rows=8550
+        rows=8512
 [PASS ✅] 2b. No empty original_text
 [PASS ✅] 3a. No dirty entity names
 [PASS ✅] 4a. All 99 docs have ≥1 topic
 [PASS ✅] 5a. No غير ساري + active mismatch
 [PASS ✅] 6a. Same set of slugs in JSON and CSV
 [PASS ✅] 6b. doc_type matches JSON ↔ CSV
-[FAIL ❌] 6c. Section counts match JSON ↔ CSV
-        legislation-3452: json=38 csv=76
+[PASS ✅] 6c. Section counts match JSON ↔ CSV
 
 ============================================================
-RESULT: 8/11 checks passed  |  3 failures
+RESULT: 11/11 checks passed  |  0 failures
 
 Key metrics:
-  documents : 100 rows, 99 unique slugs
-  sections  : 8550 rows
-  entities  : 553 rows, 270 unique names
-  topics    : 144 rows, 99 docs covered
-  doc_types : {'law': 97, 'regulation': 2, 'constitution': 1}
+  documents : 99 rows, 99 unique slugs
+  sections  : 8512 rows
+  entities  : 549 rows, 270 unique names
+  topics    : 147 rows, 99 docs covered
+  doc_types : {'law': 96, 'regulation': 2, 'constitution': 1}

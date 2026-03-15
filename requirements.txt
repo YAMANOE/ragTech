@@ -18,6 +18,9 @@ python-dotenv>=1.0.0        # Load .env for LOB credentials / proxy settings
 # ── Logging ───────────────────────────────────────────────────────────────────
 loguru>=0.7.2               # Structured, rotating logs with async support
 
+# ── AI / LLM ─────────────────────────────────────────────────────────────────
+google-genai>=1.0.0         # Gemini API — topic confidence enhancement post-processor
+
 # ── Utilities ─────────────────────────────────────────────────────────────────
 tqdm>=4.66.1                # Progress bars for batch operations
 python-dateutil>=2.9.0      # Flexible date parsing (Gregorian and converted Hijri)

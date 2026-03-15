@@ -36,12 +36,16 @@ KNOWN_VALID_LONG_ENTITIES: frozenset = frozenset([
 
 
 @pytest.fixture(scope="module")
-def pipeline_result(settings):
+def pipeline_result(settings, tmp_path_factory):
     """
     Run the pipeline for legislation-3452 using its latest HTML file.
     Skips if no HTML file is available.
     Returns the PipelineResult object (not the summary dict).
+
+    Exports are written to a temporary directory so that this test never
+    contaminates the production exports/relational/*.csv files.
     """
+    import copy
     from pipeline.cleaner import ArabicTextCleaner
     from pipeline.exporter import LegislationExporter
     from pipeline.parser import LOBParser
@@ -55,11 +59,22 @@ def pipeline_result(settings):
     html_path  = html_files[-1]   # most recent
     raw_html   = html_path.read_text(encoding="utf-8")
 
+    # Isolated settings: redirect exports to a temp dir so pytest never
+    # appends to the live exports/relational/ and exports/graph/ CSVs.
+    tmp_dir = tmp_path_factory.mktemp("integration_exports")
+    test_settings = copy.copy(settings)
+    test_settings.RELATIONAL_DIR   = tmp_dir / "relational"
+    test_settings.GRAPH_DIR        = tmp_dir / "graph"
+    test_settings.GRAPH_FUTURE_DIR = tmp_dir / "graph" / "future"
+    test_settings.RELATIONAL_DIR.mkdir(parents=True, exist_ok=True)
+    test_settings.GRAPH_DIR.mkdir(parents=True, exist_ok=True)
+    test_settings.GRAPH_FUTURE_DIR.mkdir(parents=True, exist_ok=True)
+
     parser     = LOBParser(settings)
     cleaner    = ArabicTextCleaner(settings)
     structurer = LegislationStructurer(settings)
     validator  = PipelineValidator(settings)
-    exporter   = LegislationExporter(settings)
+    exporter   = LegislationExporter(test_settings)
 
     parsed_doc = parser.parse_html(raw_html, SLUG, source_url="")
     clean_out  = cleaner.clean(parsed_doc["raw_text"], doc_slug=SLUG, source_file=str(html_path))
