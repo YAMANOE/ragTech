@@ -474,35 +474,24 @@ class LOBParser:
                 m_par_letter  = ATU.detect_paragraph_letter(stripped)
                 m_par_ordinal = ATU.detect_paragraph_ordinal(stripped)
 
-                if (m_par_letter or m_par_ordinal) and pending_section["type"] == "article":
-                    # Only split into a paragraph sub-node when the article
-                    # already has substantive lead text.  If the article body
-                    # is still empty (e.g. article 2 starts immediately with
-                    # "أ-"), accumulate everything inside the article body so
-                    # it stays non-empty and useful for chatbot retrieval.
-                    article_body = "\n".join(pending_section["body_lines"]).strip()
-                    in_no_split  = pending_section.get("no_split", False)
-
-                    if article_body and not in_no_split:
-                        # Article has lead text → create paragraph sub-node
-                        flush_pending()
-                        order += 1
-                        par_num = (
-                            m_par_letter.group(1) if m_par_letter
-                            else m_par_ordinal.group(1)
-                        )
-                        pending_section = _new_pending(
-                            stype="paragraph",
-                            number=par_num,
-                            label=stripped,
-                            order=order,
-                            parent_order=current_article_order,
-                        )
-                    else:
-                        # Article empty or already in no-split mode →
-                        # keep ALL paragraph content inside the article body
-                        pending_section["no_split"] = True
-                        pending_section["body_lines"].append(line)
+                if (m_par_letter or m_par_ordinal) and pending_section["type"] in ("article", "paragraph"):
+                    # Always split letter/ordinal markers into their own paragraph
+                    # sections, whether the article started with a lead sentence or
+                    # directly with أ-, and whether the current pending section is
+                    # the article itself or an earlier sibling paragraph (ب-, ج-…).
+                    flush_pending()
+                    order += 1
+                    par_num = (
+                        m_par_letter.group(1) if m_par_letter
+                        else m_par_ordinal.group(1)
+                    )
+                    pending_section = _new_pending(
+                        stype="paragraph",
+                        number=par_num,
+                        label=stripped,
+                        order=order,
+                        parent_order=current_article_order,
+                    )
                 else:
                     pending_section["body_lines"].append(line)
             else:
