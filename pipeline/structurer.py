@@ -60,11 +60,14 @@ class LegislationStructurer:
     Entry point: structure()
     """
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, use_arabert: bool = False):
         self.settings = settings
         self._topics: list[dict] = self._load_topics()
         self._entity_registry: dict[str, Entity] = {}   # entity_id → Entity
         self._cleaner = ArabicTextCleaner(settings)
+        # AraBERT fallback — initialised lazily on first low-confidence doc
+        self._use_arabert = use_arabert
+        self._arabert: object | None = None
 
         logger.add(
             settings.LOGS_DIR / "structurer.log",
@@ -72,6 +75,19 @@ class LegislationStructurer:
             level="INFO",
             encoding="utf-8",
         )
+
+    def _get_arabert(self) -> object | None:
+        """Lazy-load the AraBERT classifier singleton on first use."""
+        if not self._use_arabert:
+            return None
+        if self._arabert is None:
+            try:
+                from pipeline.arabert_classifier import AraBERTClassifier
+                self._arabert = AraBERTClassifier.get_instance(self._topics)
+            except Exception as exc:  # model not cached, import error, etc.
+                logger.warning(f"[Structurer] AraBERT unavailable: {exc}")
+                self._use_arabert = False   # disable for remainder of run
+        return self._arabert
 
     # ── Main entry point ──────────────────────────────────────────────────────
 
@@ -337,6 +353,12 @@ class LegislationStructurer:
 
         A single title keyword match (0.40) already exceeds the threshold (0.4),
         so any law whose domain word appears in its own title gets a topic.
+
+        AraBERT fallback (when use_arabert=True):
+          If the best keyword confidence < 0.5, run the AraBERT zero-shot
+          classifier. If its similarity score exceeds the keyword score, the
+          model result becomes the primary assignment (extraction_method='model').
+          The keyword assignments are kept as secondary results.
         """
         title_norm = ATU.normalize(document.title_ar or "")
         early_norm = ATU.normalize(normalized_text[:800])
@@ -366,13 +388,60 @@ class LegislationStructurer:
         # Sort by confidence descending
         scored.sort(key=lambda x: x[0], reverse=True)
 
+        # ── AraBERT fallback ──────────────────────────────────────────────
+        best_keyword_conf = scored[0][0] if scored else 0.0
+        arabert_primary: tuple[str, float] | None = None
+
+        if best_keyword_conf < 0.5:
+            clf = self._get_arabert()
+            if clf is not None:
+                try:
+                    ab_slug, ab_conf = clf.classify(document.title_ar or "", normalized_text)
+                    if ab_slug and ab_conf > best_keyword_conf:
+                        arabert_primary = (ab_slug, ab_conf)
+                        logger.debug(
+                            f"[AraBERT] {document.doc_slug}: keyword={best_keyword_conf:.3f} "
+                            f"→ model={ab_conf:.4f} ({ab_slug})"
+                        )
+                except Exception as exc:
+                    logger.warning(f"[AraBERT] classify failed for {document.doc_slug}: {exc}")
+
         topic_records: list[Topic] = []
         assignments: list[TopicAssignment] = []
+
+        # If AraBERT gave a better result, prepend it as primary assignment
+        if arabert_primary is not None:
+            ab_slug, ab_conf = arabert_primary
+            td_match = next((t for t in self._topics if t["id"] == ab_slug), None)
+            if td_match is not None:
+                t_id = IDG.topic_id(ab_slug)
+                topic_records.append(Topic(
+                    topic_id=t_id,
+                    topic_slug=ab_slug,
+                    topic_name_ar=td_match.get("name_ar", ""),
+                    topic_name_en=td_match.get("name_en"),
+                    parent_topic_id=IDG.topic_id(td_match["parent"]) if td_match.get("parent") else None,
+                    topic_level=td_match.get("level", 1),
+                ))
+                assignments.append(TopicAssignment(
+                    assignment_id=IDG.topic_assignment_id(document.doc_id, t_id),
+                    doc_id=document.doc_id,
+                    topic_id=t_id,
+                    topic_name_ar=td_match.get("name_ar", ""),
+                    is_primary=True,
+                    confidence=ab_conf,
+                    extraction_method=ExtractionMethod.MODEL,
+                    matched_keywords=[],
+                ))
 
         for i, (confidence, td) in enumerate(scored):
             t_slug = td["id"]
             t_id   = IDG.topic_id(t_slug)
             t_uuid = IDG.topic_uuid(t_id)
+
+            # If AraBERT already added this topic as primary, skip dupe
+            if arabert_primary and t_slug == arabert_primary[0]:
+                continue
 
             topic = Topic(
                 topic_id=t_id,
@@ -384,13 +453,15 @@ class LegislationStructurer:
             )
             topic_records.append(topic)
 
+            # is_primary = first keyword result only when AraBERT not used
+            is_primary = (i == 0) and (arabert_primary is None)
             assign_id = IDG.topic_assignment_id(document.doc_id, t_id)
             assignments.append(TopicAssignment(
                 assignment_id=assign_id,
                 doc_id=document.doc_id,
                 topic_id=t_id,
                 topic_name_ar=td.get("name_ar", ""),
-                is_primary=(i == 0),
+                is_primary=is_primary,
                 confidence=confidence,
                 extraction_method=ExtractionMethod.KEYWORD,
                 matched_keywords=[

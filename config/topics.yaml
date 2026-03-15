@@ -527,6 +527,21 @@ topics:
       - التحكيم
       - الوساطة
 
+  - id: international-agreements-law
+    name_ar: قانون تصديق الاتفاقيات الدولية والقروض
+    name_en: International Agreements & Loan Ratification Law
+    level: 1
+    parent: null
+    keywords_ar:
+      - تصديق
+      - اتفاقية قرض
+      - اتفاقية تمويل
+      - صندوق التنمية
+      - البنك الدولي
+      - قرض دولي
+      - بروتوكول مالي
+      - منحة
+
   - id: agricultural-insurance-law
     name_ar: قانون الزراعة والتأمين الزراعي وصناديق التكافل
     name_en: Agricultural & Rural Law (incl. Agricultural Mutual Funds)
