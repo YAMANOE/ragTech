@@ -77,7 +77,7 @@ _AR_TO_EN_TYPE: dict[str, str] = {
     "قانون":       "law",
     "نظام":        "regulation",
     "نظام داخلي":  "regulation",
-    "تعليمات":     "instruction",
+    "تعليمات":     "instructions",
     "قرار":        "decision",
     "منشور":       "circular",
     "أمر ملكي":    "royal_order",

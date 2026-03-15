@@ -110,7 +110,7 @@ class Settings:
         "دستور": "constitution",
         "قانون": "law",
         "نظام": "regulation",
-        "تعليمات": "instruction",
+        "تعليمات": "instructions",
         "قرار": "decision",
         "منشور": "circular",
         "تعميم": "circular",

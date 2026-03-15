@@ -582,17 +582,47 @@ class ArabicTextUtils:
         return dates
 
     @staticmethod
-    def detect_doc_type(title: str, type_map: dict) -> str:
+    def detect_doc_type(title: str, type_map: dict, source_url: str = "") -> str:
         """
-        Detect document type from title by matching first word.
+        Detect document type from title by matching Arabic type keywords.
+        Handles three failure modes:
+          1. Kashida/tatweel stretching: "قانــون" → "قانون"
+          2. Definite-article prefix: "القانون" starts with "ال"
+          3. Type keyword anywhere in title (not just at start)
+        Falls back to LegislationType integer in source_url if all else fails.
         Returns the English doc type string or 'unknown'.
         """
-        title_stripped = title.strip()
+        import re as _re
+        # Normalise tatweel (kashida U+0640) before any comparison
+        title_norm = _re.sub(r"\u0640+", "", title.strip())
+
         # Try longest match first (e.g., "مرسوم ملكي" before "مرسوم")
         sorted_keys = sorted(type_map.keys(), key=len, reverse=True)
+
+        # Pass 1: startswith on normalised title
         for arabic_type in sorted_keys:
-            if title_stripped.startswith(arabic_type):
+            if title_norm.startswith(arabic_type):
                 return type_map[arabic_type]
+
+        # Pass 2: word-boundary search anywhere in normalised title
+        # Handles "القانون الاساسي" (definite article prefix) and mid-title types
+        for arabic_type in sorted_keys:
+            pattern = r"(?:^|\s|\u0627\u0644)" + _re.escape(arabic_type) + r"(?:\s|$)"
+            if _re.search(pattern, title_norm):
+                return type_map[arabic_type]
+
+        # Pass 3: LegislationType integer fallback from source URL
+        if source_url:
+            _LEG_TYPE_ID_TO_EN = {
+                "1": "law",
+                "2": "regulation",
+                "3": "instructions",
+                "4": "agreement",
+            }
+            m = _re.search(r"LegislationType=(\d+)", source_url)
+            if m:
+                return _LEG_TYPE_ID_TO_EN.get(m.group(1), "unknown")
+
         return "unknown"
 
     # ── Entity detection ───────────────────────────────────────────────────
